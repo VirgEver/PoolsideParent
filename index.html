@@ -33,7 +33,7 @@
     margin-bottom:10px;
 }
 
-/* Both result buttons deliberately use exactly the same box width. */
+/* Both boxes use the same width AND the same height. */
 #resultScreen .resultButtons > .resultTopButtons,
 #resultScreen .resultButtons > #discardResultButton{
     box-sizing:border-box !important;
@@ -43,6 +43,7 @@
     max-width:none !important;
     height:64px !important;
     min-height:64px !important;
+    max-height:64px !important;
     margin:0 !important;
     padding:6px 4px !important;
     font-size:15px !important;
@@ -59,6 +60,7 @@
     width:100% !important;
     height:100% !important;
     min-height:0 !important;
+    max-height:none !important;
     min-width:0 !important;
     margin:0 !important;
     padding:6px 4px !important;
@@ -138,10 +140,6 @@
 <section id="historyScreen" class="hidden"><h2>Swim History</h2><div class="historyActions"><button id="shareHistoryButton" class="secondaryButton">SHARE HISTORY</button><button id="mergeHistoryButton" class="secondaryButton">ADD / MERGE HISTORY</button><button id="clearHistoryButton" class="secondaryButton clearButton">CLEAR HISTORY</button><button id="closeHistoryButton" class="primaryButton">BACK</button><input type="file" id="historyFileInput" accept=".json,application/json" hidden></div><div id="mergeMessage" class="mergeMessage"></div><div id="historyContainer"></div></section>
 <script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/result-edit.js"></script>
 <script>
-/* =====================================================
-   Result PB display tidy-up
-   Keeps the underlying result data unchanged.
-===================================================== */
 (function(){
     function tidyDifference(){
         document.querySelectorAll("#resultScreen .pbDifference").forEach(function(el){
@@ -153,7 +151,6 @@
             el.innerHTML = "<span class='differenceTitle'>Difference:</span><span class='differenceTime'>" + value + "</span>";
         });
     }
-
     const card = document.getElementById("summaryCard");
     if(card){
         const observer = new MutationObserver(tidyDifference);
