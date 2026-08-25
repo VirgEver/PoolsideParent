@@ -14,8 +14,27 @@
 #setupScreen .checkboxRow label{white-space:nowrap;}
 .setupSecondaryActions{display:flex;justify-content:center;align-items:center;gap:12px;margin:0 auto 14px auto;}
 .setupSecondaryActions button{margin:0;}
-#manualButton{width:14ch;height:46px;font-size:16px;}
-#historyButton{width:12ch;height:46px;margin:0;}
+
+/* Main screen secondary buttons: identical visible button sizing. */
+#manualButton,
+#historyButton{
+    box-sizing:border-box !important;
+    flex:1 1 0 !important;
+    width:0 !important;
+    min-width:0 !important;
+    height:46px !important;
+    min-height:46px !important;
+    max-height:46px !important;
+    margin:0 !important;
+    padding:4px !important;
+    font-family:inherit !important;
+    font-size:16px !important;
+    font-weight:inherit !important;
+    line-height:1.1 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:clip !important;
+}
 
 #resultScreen{padding-bottom:120px;}
 #resultScreen > .resultScreenTitle{text-align:center;margin:0 0 12px 0;font-size:24px;}
@@ -29,11 +48,7 @@
     margin-top:18px;
     margin-bottom:10px;
 }
-
-/* Override the old nested structure cleanly: the wrapper occupies no layout space. */
 #resultScreen .resultButtons > .resultTopButtons{display:contents !important;}
-
-/* Identical rules applied to both visible button elements. */
 #resultScreen .resultButtons button{
     box-sizing:border-box !important;
     flex:1 1 0 !important;
@@ -72,6 +87,13 @@
 @media(max-width:430px){
     #setupScreen .row{flex-direction:row;}
     #setupScreen select{width:18ch;max-width:55%;}
+    .setupSecondaryActions{gap:10px;}
+    #manualButton,
+    #historyButton{
+        width:0 !important;
+        max-width:none !important;
+        font-size:16px !important;
+    }
     #resultScreen .resultButtons{gap:10px !important;}
     #resultScreen .resultButtons button{width:calc((100% - 10px) / 2) !important;max-width:calc((100% - 10px) / 2) !important;font-size:15px !important;}
 }
