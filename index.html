@@ -10,12 +10,80 @@
         content="width=device-width, initial-scale=1.0">
 
     <title>
-        Poolside Parent - Alpha 1.3.1
+        Poolside Parent - Alpha 1.3.3
     </title>
 
     <link
         rel="stylesheet"
         href="css/main.css">
+
+    <style>
+        /* =====================================================
+           Alpha 1.3.3
+           Main Screen UI Housekeeping
+        ===================================================== */
+
+        #setupScreen{
+            padding-bottom:120px;
+        }
+
+        #setupScreen .row{
+            flex-direction:row;
+            align-items:center;
+        }
+
+        #setupScreen .row label{
+            margin-bottom:0;
+        }
+
+        #setupScreen select{
+            width:18ch;
+        }
+
+        #setupScreen .checkboxRow{
+            justify-content:flex-start;
+            gap:12px;
+        }
+
+        #setupScreen .checkboxRow label{
+            white-space:nowrap;
+        }
+
+        .setupSecondaryActions{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:12px;
+            margin:0 auto 14px auto;
+        }
+
+        .setupSecondaryActions button{
+            margin:0;
+        }
+
+        #manualButton{
+            width:14ch;
+            height:46px;
+            font-size:16px;
+        }
+
+        #historyButton{
+            width:12ch;
+            height:46px;
+            margin:0;
+        }
+
+        @media(max-width:430px){
+            #setupScreen .row{
+                flex-direction:row;
+            }
+
+            #setupScreen select{
+                width:18ch;
+                max-width:55%;
+            }
+        }
+    </style>
 
 </head>
 
@@ -87,7 +155,7 @@
                     </option>
 
                     <option>
-                        Individual Medley
+                        IM
                     </option>
 
                 </select>
@@ -157,9 +225,7 @@
                     checked>
 
                 <label for="showPB">
-
                     Show PB
-
                 </label>
 
             </div>
@@ -167,31 +233,32 @@
         </div>
 
 
-<button id="startButton" class="primaryButton">
-    START SESSION
-</button>
+        <button
+            id="startButton"
+            class="primaryButton">
+            START TIMER
+        </button>
 
-<button
-    id="manualButton"
-    class="secondaryButton">
 
-    MANUAL TIME
+        <div class="setupSecondaryActions">
 
-</button>
+            <button
+                id="manualButton"
+                class="secondaryButton">
+                MANUAL TIME
+            </button>
 
-<button
-    id="historyButton"
-    class="smallButton">
+            <button
+                id="historyButton"
+                class="smallButton">
+                HISTORY
+            </button>
 
-    HISTORY
-
-</button>
+        </div>
 
 
         <div class="footer">
-
-            Alpha 1.3.2&nbsp;&nbsp;|&nbsp;&nbsp;Screen 1 of 3
-
+            Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 1 of 3
         </div>
 
     </section>
@@ -225,9 +292,7 @@
 
 
         <div id="timerDisplay">
-
             00:00.00
-
         </div>
 
 
@@ -236,32 +301,25 @@
             <button
                 id="splitButton"
                 class="secondaryButton">
-
                 SPLIT
-
             </button>
 
 
             <button
                 id="stopButton"
                 class="dangerButton">
-
                 STOP
-
             </button>
 
         </div>
 
 
         <div id="splitContainer">
-
         </div>
 
 
         <div class="footer">
-
-            Alpha 1.2&nbsp;&nbsp;|&nbsp;&nbsp;Screen 2 of 3
-
+            Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 2 of 3
         </div>
 
     </section>
@@ -271,7 +329,6 @@
          SCREEN 3: RESULTS
     ====================================================== -->
 
-
     <section
         id="resultScreen"
         class="hidden">
@@ -280,261 +337,110 @@
         <div
             id="summaryCard"
             class="summaryCard">
+        </div>
+
+
+        <div class="buttonArea resultButtons">
+
+            <div class="resultTopButtons">
+                <button id="newSwimButton">
+                    NEW SWIM
+                </button>
+            </div>
+
+            <button id="discardResultButton">
+                DISCARD SWIM
+            </button>
 
         </div>
 
-<!-- =====================================================
-     Alpha 1.3.2 UI Polish v2
-     Result Screen Buttons
-===================================================== -->
-
-
-<div class="buttonArea resultButtons">
-
-
-    <div class="resultTopButtons">
-
-        <button id="newSwimButton">
-
-            NEW SWIM
-
-        </button>
-
-    </div>
-
-
-    <button id="discardResultButton">
-
-        DISCARD SWIM
-
-    </button>
-
-
-</div>
-
 
         <div class="footer">
-
-            Alpha 1.2&nbsp;&nbsp;|&nbsp;&nbsp;Screen 3 of 3
-
+            Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 3 of 3
         </div>
 
     </section>
 
-<!-- =====================================================
-     SCREEN 4 : MANUAL RESULT
-===================================================== -->
 
-<section
-    id="manualScreen"
-    class="hidden">
+    <!-- =====================================================
+         SCREEN 4 : MANUAL RESULT
+    ====================================================== -->
+
+    <section
+        id="manualScreen"
+        class="hidden">
 
     <h2>
-
         Manual Result
-
     </h2>
 
 
     <div class="panel">
 
         <div class="row">
-
-            <label>
-
-                Swimmer
-
-            </label>
-
+            <label>Swimmer</label>
             <select id="manualSwimmer">
-
                 <option>Alfie</option>
-
                 <option>Zane</option>
-
             </select>
-
         </div>
 
-
         <div class="row">
-
-            <label>
-
-                Stroke
-
-            </label>
-
+            <label>Stroke</label>
             <select id="manualStroke">
-
                 <option>Freestyle</option>
-
                 <option>Backstroke</option>
-
                 <option>Breaststroke</option>
-
                 <option>Butterfly</option>
-
-                <option>Individual Medley</option>
-
+                <option>IM</option>
             </select>
-
         </div>
 
-
         <div class="row">
-
-            <label>
-
-                Distance
-
-            </label>
-
+            <label>Distance</label>
             <select id="manualDistance">
-
                 <option>25m</option>
-
                 <option>50m</option>
-
                 <option>100m</option>
-
                 <option>200m</option>
-
                 <option>400m</option>
-
             </select>
-
         </div>
 
-
         <div class="row">
-
-            <label>
-
-                Pool
-
-            </label>
-
+            <label>Pool</label>
             <select id="manualCourse">
-
                 <option>25m</option>
-
                 <option>50m</option>
-
             </select>
-
         </div>
-
 
         <div class="row">
-
-            <label>
-
-                Result Type
-
-            </label>
-
-
-           <select id="manualSource">
-
-
-<option value="parent">
-
-Parent
-
-</option>
-
-
-<option value="coach">
-
-Coach
-
-</option>
-
-
-<option value="official">
-
-Official Gala
-
-</option>
-
-
-<option value="historical">
-
-Historical
-
-</option>
-
-
-</select>
-
+            <label>Result Type</label>
+            <select id="manualSource">
+                <option value="parent">Parent</option>
+                <option value="coach">Coach</option>
+                <option value="official">Official Gala</option>
+                <option value="historical">Historical</option>
+            </select>
         </div>
-
 
         <div class="row">
-
-            <label>
-
-                Date
-
-            </label>
-
-            <input
-                id="manualDate"
-                type="date">
-
+            <label>Date</label>
+            <input id="manualDate" type="date">
         </div>
 
+        <div class="row">
+            <label>Final Time</label>
 
-<div class="row">
-
-    <label>
-
-        Final Time
-
-    </label>
-
-
-    <div class="manualTimeEntry">
-
-
-        <input
-            id="manualMinutes"
-            type="number"
-            min="0"
-            max="59"
-            placeholder="00">
-
-
-        <span>
-            :
-        </span>
-
-
-        <input
-            id="manualSeconds"
-            type="number"
-            min="0"
-            max="59"
-            placeholder="00">
-
-
-        <span>
-            .
-        </span>
-
-
-        <input
-            id="manualHundredths"
-            type="number"
-            min="0"
-            max="99"
-            placeholder="00">
-
-
-    </div>
-
-</div>
+            <div class="manualTimeEntry">
+                <input id="manualMinutes" type="number" min="0" max="59" placeholder="00">
+                <span>:</span>
+                <input id="manualSeconds" type="number" min="0" max="59" placeholder="00">
+                <span>.</span>
+                <input id="manualHundredths" type="number" min="0" max="99" placeholder="00">
+            </div>
+        </div>
 
     </div>
 
@@ -542,28 +448,23 @@ Historical
     <button
         id="saveManualButton"
         class="primaryButton">
-
         SAVE RESULT
-
     </button>
 
 
     <button
         id="cancelManualButton"
         class="secondaryButton">
-
         CANCEL
-
     </button>
 
 
     <div class="footer">
-
-        Alpha 1.3.1&nbsp;&nbsp;|&nbsp;&nbsp;Screen 4 of 5
-
+        Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 4 of 5
     </div>
 
 </section>
+
 
 <!-- =====================================================
      HISTORY SCREEN
@@ -573,60 +474,36 @@ Historical
     id="historyScreen"
     class="hidden">
 
-
     <h2>
-
         Swim History
-
     </h2>
 
 
-<!-- =================================================
-     HISTORY ACTIONS
-     Alpha 1.3.2 UI Polish v3
-================================================== -->
-
 <div class="historyActions">
-
 
     <button
         id="shareHistoryButton"
         class="secondaryButton">
-
         SHARE HISTORY
-
     </button>
-
-
 
     <button
         id="mergeHistoryButton"
         class="secondaryButton">
-
         ADD / MERGE HISTORY
-
     </button>
-
-
 
     <button
         id="clearHistoryButton"
         class="secondaryButton clearButton">
-
         CLEAR HISTORY
-
     </button>
-
-
 
     <button
         id="closeHistoryButton"
         class="primaryButton">
-
         BACK
-
     </button>
-
 
     <input
         type="file"
@@ -634,20 +511,17 @@ Historical
         accept=".json,application/json"
         hidden>
 
-
 </div>
 
 
     <div
         id="mergeMessage"
         class="mergeMessage">
-
     </div>
 
 
     <div
         id="historyContainer">
-
     </div>
 
 
@@ -655,15 +529,10 @@ Historical
 
 
 <script src="js/storage.js"></script>
-
 <script src="js/export.js"></script>
-
 <script src="js/timer.js"></script>
-
 <script src="js/manual-time.js"></script>
-
 <script src="js/ui.js"></script>
-
 <script src="js/app.js"></script>
 
 
