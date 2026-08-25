@@ -1,0 +1,53 @@
+name: Organise Poolside Parent files
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  organise:
+    if: github.actor == 'github-actions[bot]' || github.event.head_commit.message != 'Organise Poolside Parent files'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Move files into folders
+        run: |
+          set -e
+
+          mkdir -p js css
+
+          [ ! -e js/app.js ] && [ -e app.js ] && git mv app.js js/app.js || true
+          [ ! -e js/storage.js ] && [ -e storage.js ] && git mv storage.js js/storage.js || true
+          [ ! -e js/timer.js ] && [ -e timer.js ] && git mv timer.js js/timer.js || true
+          [ ! -e js/ui.js ] && [ -e ui.js ] && git mv ui.js js/ui.js || true
+          [ ! -e js/export.js ] && [ -e export.js ] && git mv export.js js/export.js || true
+          [ ! -e js/manual-time.js ] && [ -e manual-time.js ] && git mv manual-time.js js/manual-time.js || true
+          [ ! -e css/main.css ] && [ -e main.css ] && git mv main.css css/main.css || true
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --cached --quiet && git diff --quiet; then
+            echo "Files already organised."
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "Organise Poolside Parent files"
+          git push
+
+      - name: Remove temporary workflow
+        if: success()
+        run: |
+          git rm .github/workflows/organise-files.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Remove temporary file organisation workflow"
+          git push
