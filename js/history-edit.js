@@ -1,7 +1,7 @@
 /* =====================================================
    START OF FILE: history-edit.js
    Poolside Parent
-   Individual history delete - test version
+   Individual history delete - housekeeping
 ===================================================== */
 
 (function(){
@@ -38,7 +38,9 @@
 
             button.type = "button";
             button.className = "historyDeleteButton";
-            button.textContent = "DELETE";
+            button.setAttribute("aria-label", "Delete this swim");
+            button.title = "Delete this swim";
+            button.textContent = "🗑️";
 
             button.addEventListener("click", function(event){
 
@@ -99,14 +101,40 @@
     const style = document.createElement("style");
 
     style.textContent = `
-        .historyDeleteButton {
-            display: block;
-            width: 100%;
-            min-height: 40px;
-            margin-top: 10px;
-            font-size: 14px;
-            border: 0;
-            border-radius: 8px;
+        /* =================================================
+           Swim History housekeeping
+        ================================================= */
+
+        #historyScreen{
+            padding-bottom:120px;
+        }
+
+        .historyItem{
+            position:relative;
+            padding-right:46px;
+        }
+
+        .historyDeleteButton{
+            position:absolute;
+            top:10px;
+            right:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            width:34px;
+            height:34px;
+            min-height:0;
+            margin:0;
+            padding:0;
+            font-size:18px;
+            line-height:1;
+            border:0;
+            border-radius:7px;
+            background:transparent;
+        }
+
+        .historyDeleteButton:active{
+            transform:scale(.92);
         }
     `;
 
