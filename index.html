@@ -20,82 +20,91 @@
 /* =====================================================
    Swim Result housekeeping
 ===================================================== */
-#resultScreen{
-    padding-bottom:120px;
-}
-
-#resultScreen > .resultScreenTitle{
-    text-align:center;
-    margin:0 0 12px 0;
-    font-size:24px;
-}
+#resultScreen{padding-bottom:120px;}
+#resultScreen > .resultScreenTitle{text-align:center;margin:0 0 12px 0;font-size:24px;}
 
 #resultScreen .resultButtons{
-    display:flex;
-    justify-content:center;
-    align-items:stretch;
-    gap:14px;
+    display:flex !important;
+    flex-direction:row !important;
+    justify-content:center !important;
+    align-items:stretch !important;
+    gap:12px !important;
     margin-top:18px;
     margin-bottom:10px;
 }
 
+/* Both result buttons deliberately use exactly the same box width. */
 #resultScreen .resultButtons > .resultTopButtons,
 #resultScreen .resultButtons > #discardResultButton{
-    flex:1 1 0;
-    width:auto;
-    min-width:0;
-    height:64px;
-    margin:0;
-    font-size:17px;
-    line-height:1.15;
+    box-sizing:border-box !important;
+    flex:1 1 0 !important;
+    width:0 !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:64px !important;
+    min-height:64px !important;
+    margin:0 !important;
+    padding:6px 4px !important;
+    font-size:15px !important;
+    line-height:1.15 !important;
+    white-space:normal !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
 }
 
-#resultScreen .resultButtons > .resultTopButtons{
-    display:flex;
-}
+#resultScreen .resultButtons > .resultTopButtons{display:flex !important;}
 
 #resultScreen .resultButtons > .resultTopButtons > #newSwimButton{
-    width:100%;
-    height:100%;
-    margin:0;
-    font-size:17px;
-    line-height:1.15;
+    box-sizing:border-box !important;
+    width:100% !important;
+    height:100% !important;
+    min-height:0 !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:6px 4px !important;
+    font-size:15px !important;
+    line-height:1.15 !important;
+    white-space:normal !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
 }
 
 #resultScreen .resultButtons > #discardResultButton{
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
 }
 
-/* PB details: PB on left, difference on right */
+/* PB on the left, Difference on the right. */
 #resultScreen .pbBox{
     display:grid;
     grid-template-columns:1fr 1fr;
     column-gap:12px;
-    align-items:center;
+    align-items:start;
     text-align:left;
 }
-
-#resultScreen .pbBox .pbTitle{
-    margin:0;
-}
-
+#resultScreen .pbBox .pbTitle{margin:0;font-weight:700;}
 #resultScreen .pbBox .pbDifference{
     grid-column:2;
     grid-row:1 / span 2;
     margin:0;
     text-align:right;
+    font-weight:700;
+}
+#resultScreen .pbBox .pbDifference .differenceTime{
+    display:block;
+    margin-top:3px;
+    font-weight:400;
 }
 
 @media(max-width:430px){
     #setupScreen .row{flex-direction:row;}
     #setupScreen select{width:18ch;max-width:55%;}
-    #resultScreen .resultButtons{gap:10px;}
+    #resultScreen .resultButtons{gap:10px !important;}
     #resultScreen .resultButtons > .resultTopButtons,
     #resultScreen .resultButtons > #discardResultButton,
     #resultScreen .resultButtons > .resultTopButtons > #newSwimButton{
-        font-size:16px;
+        font-size:15px !important;
     }
 }
 </style>
@@ -128,6 +137,31 @@
 <section id="manualScreen" class="hidden"><h2>Manual Result</h2><div class="panel"><div class="row"><label>Swimmer</label><select id="manualSwimmer"><option>Alfie</option><option>Zane</option></select></div><div class="row"><label>Stroke</label><select id="manualStroke"><option>Freestyle</option><option>Backstroke</option><option>Breaststroke</option><option>Butterfly</option><option>IM</option></select></div><div class="row"><label>Distance</label><select id="manualDistance"><option>25m</option><option>50m</option><option>100m</option><option>200m</option><option>400m</option></select></div><div class="row"><label>Pool</label><select id="manualCourse"><option>25m</option><option>50m</option></select></div><div class="row"><label>Result Type</label><select id="manualSource"><option value="parent">Parent</option><option value="coach">Coach</option><option value="official">Official Gala</option><option value="historical">Historical</option></select></div><div class="row"><label>Date</label><input id="manualDate" type="date"></div><div class="row"><label>Final Time</label><div class="manualTimeEntry"><input id="manualMinutes" type="number" min="0" max="59" placeholder="00"><span>:</span><input id="manualSeconds" type="number" min="0" max="59" placeholder="00"><span>.</span><input id="manualHundredths" type="number" min="0" max="99" placeholder="00"></div></div></div><button id="saveManualButton" class="primaryButton">SAVE RESULT</button><button id="cancelManualButton" class="secondaryButton">CANCEL</button><div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 4 of 5</div></section>
 <section id="historyScreen" class="hidden"><h2>Swim History</h2><div class="historyActions"><button id="shareHistoryButton" class="secondaryButton">SHARE HISTORY</button><button id="mergeHistoryButton" class="secondaryButton">ADD / MERGE HISTORY</button><button id="clearHistoryButton" class="secondaryButton clearButton">CLEAR HISTORY</button><button id="closeHistoryButton" class="primaryButton">BACK</button><input type="file" id="historyFileInput" accept=".json,application/json" hidden></div><div id="mergeMessage" class="mergeMessage"></div><div id="historyContainer"></div></section>
 <script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/result-edit.js"></script>
+<script>
+/* =====================================================
+   Result PB display tidy-up
+   Keeps the underlying result data unchanged.
+===================================================== */
+(function(){
+    function tidyDifference(){
+        document.querySelectorAll("#resultScreen .pbDifference").forEach(function(el){
+            if(el.querySelector(".differenceTime")) return;
+            const text = el.textContent.trim();
+            const prefix = "Difference:";
+            if(text.indexOf(prefix) !== 0) return;
+            const value = text.slice(prefix.length).trim();
+            el.innerHTML = "<span class='differenceTitle'>Difference:</span><span class='differenceTime'>" + value + "</span>";
+        });
+    }
+
+    const card = document.getElementById("summaryCard");
+    if(card){
+        const observer = new MutationObserver(tidyDifference);
+        observer.observe(card,{childList:true,subtree:true});
+        tidyDifference();
+    }
+})();
+</script>
 </div>
 </body>
 </html>
