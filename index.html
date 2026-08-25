@@ -33,8 +33,14 @@
     margin-bottom:10px;
 }
 
-/* Both boxes use the same width AND the same height. */
-#resultScreen .resultButtons > .resultTopButtons,
+/* Make the wrapper transparent so the two actual buttons are the two
+   flex items. This prevents the nested SAVE button and DISCARD button
+   from receiving different box sizing/padding. */
+#resultScreen .resultButtons > .resultTopButtons{
+    display:contents !important;
+}
+
+#resultScreen .resultButtons > #newSwimButton,
 #resultScreen .resultButtons > #discardResultButton{
     box-sizing:border-box !important;
     flex:1 1 0 !important;
@@ -53,22 +59,10 @@
     word-break:normal !important;
 }
 
-#resultScreen .resultButtons > .resultTopButtons{display:flex !important;}
-
-#resultScreen .resultButtons > .resultTopButtons > #newSwimButton{
-    box-sizing:border-box !important;
-    width:100% !important;
-    height:100% !important;
-    min-height:0 !important;
-    max-height:none !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:6px 4px !important;
-    font-size:15px !important;
-    line-height:1.15 !important;
-    white-space:normal !important;
-    overflow-wrap:normal !important;
-    word-break:normal !important;
+#resultScreen .resultButtons > #newSwimButton{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
 }
 
 #resultScreen .resultButtons > #discardResultButton{
@@ -103,9 +97,8 @@
     #setupScreen .row{flex-direction:row;}
     #setupScreen select{width:18ch;max-width:55%;}
     #resultScreen .resultButtons{gap:10px !important;}
-    #resultScreen .resultButtons > .resultTopButtons,
-    #resultScreen .resultButtons > #discardResultButton,
-    #resultScreen .resultButtons > .resultTopButtons > #newSwimButton{
+    #resultScreen .resultButtons > #newSwimButton,
+    #resultScreen .resultButtons > #discardResultButton{
         font-size:15px !important;
     }
 }
