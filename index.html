@@ -16,7 +16,88 @@
 .setupSecondaryActions button{margin:0;}
 #manualButton{width:14ch;height:46px;font-size:16px;}
 #historyButton{width:12ch;height:46px;margin:0;}
-@media(max-width:430px){#setupScreen .row{flex-direction:row;}#setupScreen select{width:18ch;max-width:55%;}}
+
+/* =====================================================
+   Swim Result housekeeping
+===================================================== */
+#resultScreen{
+    padding-bottom:120px;
+}
+
+#resultScreen > .resultScreenTitle{
+    text-align:center;
+    margin:0 0 12px 0;
+    font-size:24px;
+}
+
+#resultScreen .resultButtons{
+    display:flex;
+    justify-content:center;
+    align-items:stretch;
+    gap:14px;
+    margin-top:18px;
+    margin-bottom:10px;
+}
+
+#resultScreen .resultButtons > .resultTopButtons,
+#resultScreen .resultButtons > #discardResultButton{
+    flex:1 1 0;
+    width:auto;
+    min-width:0;
+    height:64px;
+    margin:0;
+    font-size:17px;
+    line-height:1.15;
+}
+
+#resultScreen .resultButtons > .resultTopButtons{
+    display:flex;
+}
+
+#resultScreen .resultButtons > .resultTopButtons > #newSwimButton{
+    width:100%;
+    height:100%;
+    margin:0;
+    font-size:17px;
+    line-height:1.15;
+}
+
+#resultScreen .resultButtons > #discardResultButton{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* PB details: PB on left, difference on right */
+#resultScreen .pbBox{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:12px;
+    align-items:center;
+    text-align:left;
+}
+
+#resultScreen .pbBox .pbTitle{
+    margin:0;
+}
+
+#resultScreen .pbBox .pbDifference{
+    grid-column:2;
+    grid-row:1 / span 2;
+    margin:0;
+    text-align:right;
+}
+
+@media(max-width:430px){
+    #setupScreen .row{flex-direction:row;}
+    #setupScreen select{width:18ch;max-width:55%;}
+    #resultScreen .resultButtons{gap:10px;}
+    #resultScreen .resultButtons > .resultTopButtons,
+    #resultScreen .resultButtons > #discardResultButton,
+    #resultScreen .resultButtons > .resultTopButtons > #newSwimButton{
+        font-size:16px;
+    }
+}
 </style>
 </head>
 <body>
@@ -38,7 +119,12 @@
 <div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 1 of 3</div>
 </section>
 <section id="timingScreen" class="hidden"><div class="sessionHeader"><div id="sessionSwimmer" class="swimmerName"></div><div id="sessionEvent" class="eventName"></div></div><div id="timerDisplay">00:00.00</div><div class="buttonPanel"><button id="splitButton" class="secondaryButton">SPLIT</button><button id="stopButton" class="dangerButton">STOP</button></div><div id="splitContainer"></div><div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 2 of 3</div></section>
-<section id="resultScreen" class="hidden"><div id="summaryCard" class="summaryCard"></div><div class="buttonArea resultButtons"><div class="resultTopButtons"><button id="newSwimButton">NEW SWIM</button></div><button id="discardResultButton">DISCARD SWIM</button></div><div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 3 of 3</div></section>
+<section id="resultScreen" class="hidden">
+<h2 class="resultScreenTitle">Swim Result</h2>
+<div id="summaryCard" class="summaryCard"></div>
+<div class="buttonArea resultButtons"><div class="resultTopButtons"><button id="newSwimButton">SAVE &amp;<br>NEW SWIM</button></div><button id="discardResultButton">DISCARD<br>SWIM</button></div>
+<div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 3 of 3</div>
+</section>
 <section id="manualScreen" class="hidden"><h2>Manual Result</h2><div class="panel"><div class="row"><label>Swimmer</label><select id="manualSwimmer"><option>Alfie</option><option>Zane</option></select></div><div class="row"><label>Stroke</label><select id="manualStroke"><option>Freestyle</option><option>Backstroke</option><option>Breaststroke</option><option>Butterfly</option><option>IM</option></select></div><div class="row"><label>Distance</label><select id="manualDistance"><option>25m</option><option>50m</option><option>100m</option><option>200m</option><option>400m</option></select></div><div class="row"><label>Pool</label><select id="manualCourse"><option>25m</option><option>50m</option></select></div><div class="row"><label>Result Type</label><select id="manualSource"><option value="parent">Parent</option><option value="coach">Coach</option><option value="official">Official Gala</option><option value="historical">Historical</option></select></div><div class="row"><label>Date</label><input id="manualDate" type="date"></div><div class="row"><label>Final Time</label><div class="manualTimeEntry"><input id="manualMinutes" type="number" min="0" max="59" placeholder="00"><span>:</span><input id="manualSeconds" type="number" min="0" max="59" placeholder="00"><span>.</span><input id="manualHundredths" type="number" min="0" max="99" placeholder="00"></div></div></div><button id="saveManualButton" class="primaryButton">SAVE RESULT</button><button id="cancelManualButton" class="secondaryButton">CANCEL</button><div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 4 of 5</div></section>
 <section id="historyScreen" class="hidden"><h2>Swim History</h2><div class="historyActions"><button id="shareHistoryButton" class="secondaryButton">SHARE HISTORY</button><button id="mergeHistoryButton" class="secondaryButton">ADD / MERGE HISTORY</button><button id="clearHistoryButton" class="secondaryButton clearButton">CLEAR HISTORY</button><button id="closeHistoryButton" class="primaryButton">BACK</button><input type="file" id="historyFileInput" accept=".json,application/json" hidden></div><div id="mergeMessage" class="mergeMessage"></div><div id="historyContainer"></div></section>
 <script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/result-edit.js"></script>
