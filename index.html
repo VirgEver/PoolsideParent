@@ -17,61 +17,47 @@
 #manualButton{width:14ch;height:46px;font-size:16px;}
 #historyButton{width:12ch;height:46px;margin:0;}
 
-/* =====================================================
-   Swim Result housekeeping
-===================================================== */
 #resultScreen{padding-bottom:120px;}
 #resultScreen > .resultScreenTitle{text-align:center;margin:0 0 12px 0;font-size:24px;}
 
 #resultScreen .resultButtons{
     display:flex !important;
     flex-direction:row !important;
-    justify-content:center !important;
     align-items:stretch !important;
+    justify-content:space-between !important;
     gap:12px !important;
     margin-top:18px;
     margin-bottom:10px;
 }
 
-/* Make the wrapper transparent so the two actual buttons are the two
-   flex items. This prevents the nested SAVE button and DISCARD button
-   from receiving different box sizing/padding. */
-#resultScreen .resultButtons > .resultTopButtons{
-    display:contents !important;
-}
+/* Override the old nested structure cleanly: the wrapper occupies no layout space. */
+#resultScreen .resultButtons > .resultTopButtons{display:contents !important;}
 
-#resultScreen .resultButtons > #newSwimButton,
-#resultScreen .resultButtons > #discardResultButton{
+/* Identical rules applied to both visible button elements. */
+#resultScreen .resultButtons button{
     box-sizing:border-box !important;
     flex:1 1 0 !important;
-    width:0 !important;
+    width:calc((100% - 12px) / 2) !important;
     min-width:0 !important;
-    max-width:none !important;
-    height:64px !important;
-    min-height:64px !important;
-    max-height:64px !important;
+    max-width:calc((100% - 12px) / 2) !important;
+    height:54px !important;
+    min-height:54px !important;
+    max-height:54px !important;
     margin:0 !important;
-    padding:6px 4px !important;
+    padding:4px !important;
+    font-family:inherit !important;
     font-size:15px !important;
-    line-height:1.15 !important;
+    font-weight:inherit !important;
+    line-height:1.1 !important;
     white-space:normal !important;
-    overflow-wrap:normal !important;
+    overflow:hidden !important;
     word-break:normal !important;
-}
-
-#resultScreen .resultButtons > #newSwimButton{
+    overflow-wrap:normal !important;
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
 }
 
-#resultScreen .resultButtons > #discardResultButton{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-}
-
-/* PB on the left, Difference on the right. */
 #resultScreen .pbBox{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -80,27 +66,14 @@
     text-align:left;
 }
 #resultScreen .pbBox .pbTitle{margin:0;font-weight:700;}
-#resultScreen .pbBox .pbDifference{
-    grid-column:2;
-    grid-row:1 / span 2;
-    margin:0;
-    text-align:right;
-    font-weight:700;
-}
-#resultScreen .pbBox .pbDifference .differenceTime{
-    display:block;
-    margin-top:3px;
-    font-weight:400;
-}
+#resultScreen .pbBox .pbDifference{grid-column:2;grid-row:1 / span 2;margin:0;text-align:right;font-weight:700;}
+#resultScreen .pbBox .pbDifference .differenceTime{display:block;margin-top:3px;font-weight:400;}
 
 @media(max-width:430px){
     #setupScreen .row{flex-direction:row;}
     #setupScreen select{width:18ch;max-width:55%;}
     #resultScreen .resultButtons{gap:10px !important;}
-    #resultScreen .resultButtons > #newSwimButton,
-    #resultScreen .resultButtons > #discardResultButton{
-        font-size:15px !important;
-    }
+    #resultScreen .resultButtons button{width:calc((100% - 10px) / 2) !important;max-width:calc((100% - 10px) / 2) !important;font-size:15px !important;}
 }
 </style>
 </head>
@@ -116,10 +89,7 @@
 <div class="row checkboxRow"><input type="checkbox" id="showPB" checked><label for="showPB">Show PB</label></div>
 </div>
 <button id="startButton" class="primaryButton">START TIMER</button>
-<div class="setupSecondaryActions">
-<button id="manualButton" class="secondaryButton">MANUAL TIME</button>
-<button id="historyButton" class="smallButton">HISTORY</button>
-</div>
+<div class="setupSecondaryActions"><button id="manualButton" class="secondaryButton">MANUAL TIME</button><button id="historyButton" class="smallButton">HISTORY</button></div>
 <div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 1 of 3</div>
 </section>
 <section id="timingScreen" class="hidden"><div class="sessionHeader"><div id="sessionSwimmer" class="swimmerName"></div><div id="sessionEvent" class="eventName"></div></div><div id="timerDisplay">00:00.00</div><div class="buttonPanel"><button id="splitButton" class="secondaryButton">SPLIT</button><button id="stopButton" class="dangerButton">STOP</button></div><div id="splitContainer"></div><div class="footer">Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 2 of 3</div></section>
@@ -134,22 +104,8 @@
 <script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/result-edit.js"></script>
 <script>
 (function(){
-    function tidyDifference(){
-        document.querySelectorAll("#resultScreen .pbDifference").forEach(function(el){
-            if(el.querySelector(".differenceTime")) return;
-            const text = el.textContent.trim();
-            const prefix = "Difference:";
-            if(text.indexOf(prefix) !== 0) return;
-            const value = text.slice(prefix.length).trim();
-            el.innerHTML = "<span class='differenceTitle'>Difference:</span><span class='differenceTime'>" + value + "</span>";
-        });
-    }
-    const card = document.getElementById("summaryCard");
-    if(card){
-        const observer = new MutationObserver(tidyDifference);
-        observer.observe(card,{childList:true,subtree:true});
-        tidyDifference();
-    }
+function tidyDifference(){document.querySelectorAll("#resultScreen .pbDifference").forEach(function(el){if(el.querySelector(".differenceTime"))return;const text=el.textContent.trim(),prefix="Difference:";if(text.indexOf(prefix)!==0)return;const value=text.slice(prefix.length).trim();el.innerHTML="<span class='differenceTitle'>Difference:</span><span class='differenceTime'>"+value+"</span>";});}
+const card=document.getElementById("summaryCard");if(card){new MutationObserver(tidyDifference).observe(card,{childList:true,subtree:true});tidyDifference();}
 })();
 </script>
 </div>
