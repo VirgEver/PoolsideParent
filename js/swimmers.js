@@ -268,7 +268,19 @@ function renderSwimmerSelectors(
 
 
     const swimmers =
-        syncSwimmersFromHistory();
+        syncSwimmersFromHistory()
+            .slice()
+            .sort(
+                function(a,b){
+                    return a.name.localeCompare(
+                        b.name,
+                        undefined,
+                        {
+                            sensitivity:"base"
+                        }
+                    );
+                }
+            );
 
 
     selectors.forEach(
