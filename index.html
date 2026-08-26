@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0">
 
     <title>
-        Poolside Parent - Alpha 1.3.3
+        Poolside Parent - Alpha 1.3.4
     </title>
 
     <link
@@ -19,8 +19,8 @@
 
     <style>
         /* =====================================================
-           Alpha 1.3.3
-           Main Screen UI Housekeeping
+           Alpha 1.3.4
+           Main Screen UI + Swimmer Management
         ===================================================== */
 
         #setupScreen{
@@ -47,6 +47,26 @@
 
         #setupScreen .checkboxRow label{
             white-space:nowrap;
+        }
+
+        .swimmerControl{
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        .swimmerControl select{
+            margin:0;
+        }
+
+        #addSwimmerButton{
+            width:42px;
+            height:42px;
+            min-width:42px;
+            padding:0;
+            margin:0;
+            font-size:24px;
+            line-height:1;
         }
 
         .setupSecondaryActions{
@@ -115,17 +135,21 @@
                     Swimmer
                 </label>
 
-                <select id="swimmer">
+                <div class="swimmerControl">
 
-                    <option>
-                        Alfie
-                    </option>
+                    <button
+                        id="addSwimmerButton"
+                        class="smallButton"
+                        type="button"
+                        aria-label="Add swimmer"
+                        title="Add swimmer">
+                        +
+                    </button>
 
-                    <option>
-                        Zane
-                    </option>
+                    <select id="swimmer">
+                    </select>
 
-                </select>
+                </div>
 
             </div>
 
@@ -258,7 +282,7 @@
 
 
         <div class="footer">
-            Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 1 of 3
+            Alpha 1.3.4&nbsp;&nbsp;|&nbsp;&nbsp;Screen 1 of 3
         </div>
 
     </section>
@@ -319,7 +343,7 @@
 
 
         <div class="footer">
-            Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 2 of 3
+            Alpha 1.3.4&nbsp;&nbsp;|&nbsp;&nbsp;Screen 2 of 3
         </div>
 
     </section>
@@ -356,7 +380,7 @@
 
 
         <div class="footer">
-            Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 3 of 3
+            Alpha 1.3.4&nbsp;&nbsp;|&nbsp;&nbsp;Screen 3 of 3
         </div>
 
     </section>
@@ -380,8 +404,6 @@
         <div class="row">
             <label>Swimmer</label>
             <select id="manualSwimmer">
-                <option>Alfie</option>
-                <option>Zane</option>
             </select>
         </div>
 
@@ -460,7 +482,7 @@
 
 
     <div class="footer">
-        Alpha 1.3.3&nbsp;&nbsp;|&nbsp;&nbsp;Screen 4 of 5
+        Alpha 1.3.4&nbsp;&nbsp;|&nbsp;&nbsp;Screen 4 of 5
     </div>
 
 </section>
@@ -529,11 +551,17 @@
 
 
 <script src="js/storage.js"></script>
+<script src="js/swimmers.js"></script>
 <script src="js/export.js"></script>
 <script src="js/timer.js"></script>
 <script src="js/manual-time.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/app.js"></script>
+
+
+<script>
+    initialiseSwimmers();
+</script>
 
 
 </body>
