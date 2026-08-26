@@ -186,6 +186,71 @@ function addSwimmer(
 
 
 /* =====================================================
+   Sync Swimmers From History
+===================================================== */
+
+function syncSwimmersFromHistory(){
+
+    const swimmers =
+        getSwimmers();
+
+
+    if(typeof getSwims !== "function"){
+        return swimmers;
+    }
+
+
+    let changed = false;
+
+
+    getSwims().forEach(
+        function(swim){
+
+            const name =
+                String(
+                    swim.swimmer || ""
+                ).trim();
+
+            if(!name){
+                return;
+            }
+
+
+            const exists =
+                swimmers.some(
+                    function(swimmer){
+                        return swimmer.name.toLowerCase()
+                            === name.toLowerCase();
+                    }
+                );
+
+
+            if(!exists){
+
+                swimmers.push({
+                    id:createUniqueId(),
+                    name:name
+                });
+
+                changed = true;
+
+            }
+
+        }
+    );
+
+
+    if(changed){
+        saveSwimmers(swimmers);
+    }
+
+
+    return swimmers;
+
+}
+
+
+/* =====================================================
    Render Swimmer Selectors
 ===================================================== */
 
@@ -203,7 +268,7 @@ function renderSwimmerSelectors(
 
 
     const swimmers =
-        getSwimmers();
+        syncSwimmersFromHistory();
 
 
     selectors.forEach(
@@ -279,7 +344,7 @@ function renderSwimmerSelectors(
 
 
 /* =====================================================
-   Add Button
+   Add Button + Validation
 ===================================================== */
 
 function initialiseSwimmers(){
@@ -293,84 +358,158 @@ function initialiseSwimmers(){
         );
 
 
-    if(!addButton){
-        return;
+    if(addButton){
+
+        addButton.addEventListener(
+            "click",
+            function(){
+
+                const name =
+                    prompt(
+                        "Enter swimmer name:"
+                    );
+
+                if(name === null){
+                    return;
+                }
+
+
+                const cleanName =
+                    String(name).trim();
+
+                if(!cleanName){
+                    return;
+                }
+
+
+                const swimmers =
+                    getSwimmers();
+
+                const duplicate =
+                    swimmers.find(
+                        function(swimmer){
+                            return swimmer.name.toLowerCase()
+                                === cleanName.toLowerCase();
+                        }
+                    );
+
+
+                if(duplicate){
+
+                    renderSwimmerSelectors(
+                        duplicate.name
+                    );
+
+                    alert(
+                        duplicate.name
+                        +
+                        " is already in your swimmers."
+                    );
+
+                    return;
+
+                }
+
+
+                const swimmer =
+                    addSwimmer(cleanName);
+
+
+                if(swimmer){
+
+                    renderSwimmerSelectors(
+                        swimmer.name
+                    );
+
+                }
+
+            }
+        );
+
     }
 
 
-    addButton.addEventListener(
-        "click",
-        function(){
+    /*
+       Stop the main timer from starting when
+       no swimmer has been selected.
+    */
 
-            const name =
-                prompt(
-                    "Enter swimmer name:"
-                );
+    const startButton =
+        document.getElementById(
+            "startButton"
+        );
 
-            if(name === null){
-                return;
-            }
-
-
-            const cleanName =
-                String(name).trim();
-
-            if(!cleanName){
-                return;
-            }
+    const swimmerSelect =
+        document.getElementById(
+            "swimmer"
+        );
 
 
-            const swimmers =
-                getSwimmers();
+    if(startButton && swimmerSelect){
 
-            const duplicate =
-                swimmers.find(
-                    function(swimmer){
-                        return swimmer.name.toLowerCase()
-                            === cleanName.toLowerCase();
-                    }
-                );
+        startButton.addEventListener(
+            "click",
+            function(event){
 
+                if(!swimmerSelect.value){
 
-            if(duplicate){
+                    event.preventDefault();
 
-                renderSwimmerSelectors(
-                    duplicate.name
-                );
+                    event.stopImmediatePropagation();
 
-                document.getElementById(
-                    "swimmer"
-                ).value = duplicate.name;
+                    alert(
+                        "Please select a swimmer."
+                    );
 
-                document.getElementById(
-                    "manualSwimmer"
-                ).value = duplicate.name;
+                }
 
-                alert(
-                    duplicate.name
-                    +
-                    " is already in your swimmers."
-                );
+            },
+            true
+        );
 
-                return;
-
-            }
+    }
 
 
-            const swimmer =
-                addSwimmer(cleanName);
+    /*
+       Manual results use the same swimmer list.
+       Prevent saving a manual result without
+       a swimmer selected.
+    */
+
+    const saveManualButton =
+        document.getElementById(
+            "saveManualButton"
+        );
+
+    const manualSwimmer =
+        document.getElementById(
+            "manualSwimmer"
+        );
 
 
-            if(swimmer){
+    if(saveManualButton && manualSwimmer){
 
-                renderSwimmerSelectors(
-                    swimmer.name
-                );
+        saveManualButton.addEventListener(
+            "click",
+            function(event){
 
-            }
+                if(!manualSwimmer.value){
 
-        }
-    );
+                    event.preventDefault();
+
+                    event.stopImmediatePropagation();
+
+                    alert(
+                        "Please select a swimmer."
+                    );
+
+                }
+
+            },
+            true
+        );
+
+    }
 
 }
 
