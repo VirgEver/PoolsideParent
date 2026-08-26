@@ -1,7 +1,7 @@
 /* =====================================================
    START OF FILE: result-edit.js
    Poolside Parent
-   Edit swim details after STOP - test version
+   Edit swim details after STOP
 ===================================================== */
 
 (function(){
@@ -17,7 +17,7 @@
         {
             id: "resultSwimmer",
             label: "Swimmer",
-            values: ["Alfie", "Zane"],
+            values: [],
             key: "swimmer"
         },
         {
@@ -47,6 +47,28 @@
     ];
 
 
+    function getResultSwimmerNames(){
+
+        if(typeof getSwimmers !== "function"){
+            return [];
+        }
+
+        return getSwimmers()
+            .slice()
+            .sort(function(a,b){
+                return a.name.localeCompare(
+                    b.name,
+                    undefined,
+                    {sensitivity:"base"}
+                );
+            })
+            .map(function(swimmer){
+                return swimmer.name;
+            });
+
+    }
+
+
     function createControls(){
 
         if(document.getElementById("resultEditPanel")){
@@ -69,7 +91,12 @@
             const select = document.createElement("select");
             select.id = field.id;
 
-            field.values.forEach(function(value){
+            const values =
+                field.key === "swimmer"
+                    ? getResultSwimmerNames()
+                    : field.values;
+
+            values.forEach(function(value){
                 const option = document.createElement("option");
                 option.value = value;
                 option.textContent = value;
@@ -92,6 +119,36 @@
             panel,
             summaryCard.nextSibling
         );
+
+    }
+
+
+    function refreshSwimmerOptions(){
+
+        const select =
+            document.getElementById("resultSwimmer");
+
+        if(!select){
+            return;
+        }
+
+        const currentValue =
+            select.value;
+
+        select.innerHTML = "";
+
+        getResultSwimmerNames().forEach(function(name){
+
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+
+        });
+
+        if(currentValue){
+            select.value = currentValue;
+        }
 
     }
 
@@ -150,6 +207,7 @@
         }
 
         createControls();
+        refreshSwimmerOptions();
         setControlValues(pending);
     }
 
