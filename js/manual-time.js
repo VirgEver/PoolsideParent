@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 4.8 seconds
-Output:
 /* =====================================================
    START OF FILE : manual-time.js
    Poolside Parent Alpha 1.3.1

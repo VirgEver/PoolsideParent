@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 4.8 seconds
-Output:
 /* =====================================================
    START OF FILE: swimmers.js
    Poolside Parent Alpha 1.3.4
