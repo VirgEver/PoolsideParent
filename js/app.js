@@ -875,7 +875,13 @@ showSetupScreen();
         try{
             const saved = JSON.parse(localStorage.getItem(swimmerStorageKey));
             if(Array.isArray(saved)){
-                return saved.filter(function(name){ return typeof name === "string" && name.trim(); });
+                return saved
+                    .map(function(swimmer){
+                        return typeof swimmer === "string"
+                            ? swimmer
+                            : swimmer && swimmer.name;
+                    })
+                    .filter(function(name){ return typeof name === "string" && name.trim(); });
             }
         }catch(error){}
 
