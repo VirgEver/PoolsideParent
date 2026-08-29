@@ -74,7 +74,9 @@ function initialiseManualScreen(){
     manualDate.value =
         today.toISOString().substring(0,10);
 
-    manualTime.value = "";
+    manualMinutes.value = "";
+    manualSeconds.value = "";
+    manualHundredths.value = "";
 
 }
 
@@ -191,7 +193,7 @@ function saveManualSwim(){
             "Time must be entered as\n\n00:32.45"
         );
 
-        manualTime.focus();
+        manualSeconds.focus();
 
         return;
 
@@ -257,3 +259,4 @@ finalTime:
 /* =====================================================
    END OF FILE
 ===================================================== */
+

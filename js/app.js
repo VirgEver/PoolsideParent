@@ -856,3 +856,100 @@ showSetupScreen();
 /* =====================================================
    END OF FILE: app.js
 ===================================================== */
+
+/* =====================================================
+   Test branch swimmer management
+===================================================== */
+
+(function enableSwimmerManagement(){
+
+    const swimmerStorageKey = "poolsideParentSwimmers";
+    const swimmerSelect = document.getElementById("swimmer");
+    const manualSwimmerSelect = document.getElementById("manualSwimmer");
+
+    if(!swimmerSelect || !manualSwimmerSelect){
+        return;
+    }
+
+    function storedSwimmers(){
+        try{
+            const saved = JSON.parse(localStorage.getItem(swimmerStorageKey));
+            if(Array.isArray(saved)){
+                return saved.filter(function(name){ return typeof name === "string" && name.trim(); });
+            }
+        }catch(error){}
+
+        return Array.from(swimmerSelect.options)
+            .map(function(option){ return option.textContent.trim(); })
+            .filter(Boolean);
+    }
+
+    function saveSwimmers(names){
+        localStorage.setItem(swimmerStorageKey, JSON.stringify(names));
+    }
+
+    function renderSwimmers(selectedName){
+        const names = storedSwimmers()
+            .filter(function(name, index, all){ return all.indexOf(name) === index; })
+            .sort(function(a, b){ return a.localeCompare(b, undefined, {sensitivity:"base"}); });
+
+        [swimmerSelect, manualSwimmerSelect].forEach(function(select){
+            select.innerHTML = "";
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = "Select swimmer";
+            select.appendChild(placeholder);
+
+            names.forEach(function(name){
+                const option = document.createElement("option");
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+
+            if(names.includes(selectedName)){
+                select.value = selectedName;
+            }
+        });
+    }
+
+    const swimmerControl = document.createElement("div");
+    swimmerControl.style.cssText = "display:flex;align-items:center;gap:8px;";
+    swimmerSelect.parentNode.insertBefore(swimmerControl, swimmerSelect);
+    swimmerControl.appendChild(swimmerSelect);
+
+    const addSwimmerButton = document.createElement("button");
+    addSwimmerButton.id = "addSwimmerButton";
+    addSwimmerButton.type = "button";
+    addSwimmerButton.className = "smallButton";
+    addSwimmerButton.textContent = "+";
+    addSwimmerButton.setAttribute("aria-label", "Add swimmer");
+    addSwimmerButton.style.cssText = "width:42px;height:42px;min-width:42px;padding:0;margin:0;font-size:24px;line-height:1;";
+    swimmerControl.insertBefore(addSwimmerButton, swimmerSelect);
+
+    addSwimmerButton.addEventListener("click", function(){
+        const enteredName = prompt("Enter swimmer name:");
+        const cleanName = String(enteredName || "").trim();
+
+        if(!cleanName){
+            return;
+        }
+
+        const names = storedSwimmers();
+        const existingName = names.find(function(name){ return name.toLowerCase() === cleanName.toLowerCase(); });
+
+        if(existingName){
+            renderSwimmers(existingName);
+            alert(existingName + " is already in your swimmers.");
+            return;
+        }
+
+        names.push(cleanName);
+        saveSwimmers(names);
+        renderSwimmers(cleanName);
+    });
+
+    renderSwimmers();
+
+})();
+
