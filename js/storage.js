@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 4.8 seconds
+Output:
 /* =====================================================
    START OF FILE: storage.js
    Poolside Parent Alpha 1.2.1
