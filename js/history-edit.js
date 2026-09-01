@@ -1,9 +1,11 @@
 /* =====================================================
    START OF FILE: history-edit.js
    Poolside Parent
-   Individual history delete - housekeeping
+   Individual history delete + history swimmer sync
 ===================================================== */
 (function(){
+    const swimmerStorageKey="poolsideParentSwimmers";
+
     function addDeleteButtons(){
         const container=document.getElementById("historyContainer");
         if(!container){return;}
@@ -27,6 +29,7 @@
             item.appendChild(button);
         });
     }
+
     function deleteSwim(id){
         const database=getDatabase();
         const originalLength=database.swims.length;
@@ -35,10 +38,68 @@
         saveDatabase(database);
         buildHistory();
     }
+
+    function normaliseStoredSwimmers(){
+        try{
+            const saved=JSON.parse(localStorage.getItem(swimmerStorageKey));
+            if(Array.isArray(saved)){
+                return saved.map(function(swimmer){
+                    return typeof swimmer==="string" ? swimmer : swimmer&&swimmer.name;
+                }).filter(function(name){
+                    return typeof name==="string" && name.trim();
+                }).map(function(name){return name.trim();});
+            }
+        }catch(error){}
+        return [];
+    }
+
+    function syncSwimmersFromHistory(){
+        if(typeof getSwims!=="function"){return;}
+
+        const names=normaliseStoredSwimmers();
+        getSwims().forEach(function(swim){
+            const name=String(swim&&swim.swimmer||"").trim();
+            if(!name){return;}
+            const exists=names.some(function(existing){
+                return existing.toLowerCase()===name.toLowerCase();
+            });
+            if(!exists){names.push(name);}
+        });
+
+        names.sort(function(a,b){
+            return a.localeCompare(b,undefined,{sensitivity:"base"});
+        });
+        localStorage.setItem(swimmerStorageKey,JSON.stringify(names));
+
+        [document.getElementById("swimmer"),document.getElementById("manualSwimmer")].forEach(function(select){
+            if(!select){return;}
+            const previous=select.value;
+            select.innerHTML="";
+            const placeholder=document.createElement("option");
+            placeholder.value="";
+            placeholder.textContent="Select swimmer";
+            select.appendChild(placeholder);
+            names.forEach(function(name){
+                const option=document.createElement("option");
+                option.value=name;
+                option.textContent=name;
+                select.appendChild(option);
+            });
+            if(previous && names.indexOf(previous)!==-1){select.value=previous;}
+        });
+    }
+
     const existingBuildHistory=window.buildHistory;
     if(typeof existingBuildHistory==="function"){
-        window.buildHistory=function(){existingBuildHistory();addDeleteButtons();};
+        window.buildHistory=function(){
+            existingBuildHistory();
+            addDeleteButtons();
+            syncSwimmersFromHistory();
+        };
     }
+
+    syncSwimmersFromHistory();
+
     const style=document.createElement("style");
     style.textContent=`
         #historyScreen{padding-bottom:120px;}
