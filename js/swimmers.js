@@ -1,532 +1,184 @@
 /* =====================================================
    START OF FILE: swimmers.js
-   Poolside Parent Alpha 1.3.4
-   Swimmer management using localStorage
+   Poolside Parent
+   Dynamic swimmer management + legacy migration
 ===================================================== */
 
-const SWIMMERS_STORAGE_KEY =
-    "poolsideParentSwimmers";
+const SWIMMERS_STORAGE_KEY = "poolsideParentSwimmers";
 
+function normaliseSwimmerList(raw){
+    if(!Array.isArray(raw)){return [];}
 
-/* =====================================================
-   Load Swimmers
-===================================================== */
+    const names=[];
+
+    raw.forEach(function(item){
+        const name = typeof item === "string"
+            ? item.trim()
+            : String(item && item.name || "").trim();
+
+        if(!name){return;}
+
+        const exists = names.some(function(existing){
+            return existing.toLowerCase() === name.toLowerCase();
+        });
+
+        if(!exists){names.push(name);}
+    });
+
+    return names.map(function(name){
+        const oldObject = raw.find(function(item){
+            return item && typeof item === "object" &&
+                String(item.name || "").trim().toLowerCase() === name.toLowerCase();
+        });
+
+        return {
+            id: oldObject && oldObject.id ? oldObject.id : createUniqueId(),
+            name:name
+        };
+    });
+}
+
+function saveSwimmers(swimmers){
+    localStorage.setItem(SWIMMERS_STORAGE_KEY, JSON.stringify(swimmers));
+}
 
 function getSwimmers(){
+    let swimmers=[];
 
     try{
-
-        const stored =
-            localStorage.getItem(
-                SWIMMERS_STORAGE_KEY
-            );
-
+        const stored = localStorage.getItem(SWIMMERS_STORAGE_KEY);
         if(stored){
-
-            const parsed =
-                JSON.parse(stored);
-
-            if(Array.isArray(parsed)){
-
-                return parsed.filter(
-                    function(swimmer){
-                        return swimmer
-                            && swimmer.id
-                            && swimmer.name;
-                    }
-                );
-
-            }
-
+            swimmers = normaliseSwimmerList(JSON.parse(stored));
         }
-
-    }
-    catch(error){
-
-        console.error(
-            "Could not read swimmers:",
-            error
-        );
-
+    }catch(error){
+        console.error("Could not read swimmers:",error);
     }
 
-
-    /*
-       First use of the new swimmer system.
-       Existing swim history is used to
-       migrate the names already in use.
-
-       A genuinely new installation has
-       no history, so it starts blank.
-    */
-
-    const names = [];
-
+    // Always supplement the swimmer list from saved history.
     if(typeof getSwims === "function"){
+        getSwims().forEach(function(swim){
+            const name = String(swim && swim.swimmer || "").trim();
+            if(!name){return;}
 
-        getSwims().forEach(
-            function(swim){
-
-                const name =
-                    String(
-                        swim.swimmer || ""
-                    ).trim();
-
-                if(
-                    name
-                    &&
-                    !names.some(
-                        function(existing){
-                            return existing.toLowerCase()
-                                === name.toLowerCase();
-                        }
-                    )
-                ){
-
-                    names.push(name);
-
-                }
-
-            }
-        );
-
-    }
-
-
-    const migrated =
-        names.map(
-            function(name){
-
-                return {
-                    id:createUniqueId(),
-                    name:name
-                };
-
-            }
-        );
-
-
-    saveSwimmers(migrated);
-
-
-    return migrated;
-
-}
-
-
-/* =====================================================
-   Save Swimmers
-===================================================== */
-
-function saveSwimmers(
-    swimmers
-){
-
-    localStorage.setItem(
-        SWIMMERS_STORAGE_KEY,
-        JSON.stringify(swimmers)
-    );
-
-}
-
-
-/* =====================================================
-   Add Swimmer
-===================================================== */
-
-function addSwimmer(
-    name
-){
-
-    const cleanName =
-        String(name || "").trim();
-
-    if(!cleanName){
-        return null;
-    }
-
-
-    const swimmers =
-        getSwimmers();
-
-
-    const duplicate =
-        swimmers.find(
-            function(swimmer){
-
-                return swimmer.name.toLowerCase()
-                    === cleanName.toLowerCase();
-
-            }
-        );
-
-
-    if(duplicate){
-        return duplicate;
-    }
-
-
-    const swimmer = {
-
-        id:createUniqueId(),
-
-        name:cleanName
-
-    };
-
-
-    swimmers.push(swimmer);
-
-    saveSwimmers(swimmers);
-
-
-    return swimmer;
-
-}
-
-
-/* =====================================================
-   Sync Swimmers From History
-===================================================== */
-
-function syncSwimmersFromHistory(){
-
-    const swimmers =
-        getSwimmers();
-
-
-    if(typeof getSwims !== "function"){
-        return swimmers;
-    }
-
-
-    let changed = false;
-
-
-    getSwims().forEach(
-        function(swim){
-
-            const name =
-                String(
-                    swim.swimmer || ""
-                ).trim();
-
-            if(!name){
-                return;
-            }
-
-
-            const exists =
-                swimmers.some(
-                    function(swimmer){
-                        return swimmer.name.toLowerCase()
-                            === name.toLowerCase();
-                    }
-                );
-
+            const exists = swimmers.some(function(swimmer){
+                return swimmer.name.toLowerCase() === name.toLowerCase();
+            });
 
             if(!exists){
-
-                swimmers.push({
-                    id:createUniqueId(),
-                    name:name
-                });
-
-                changed = true;
-
+                swimmers.push({id:createUniqueId(),name:name});
             }
-
-        }
-    );
-
-
-    if(changed){
-        saveSwimmers(swimmers);
+        });
     }
 
+    swimmers.sort(function(a,b){
+        return a.name.localeCompare(b.name,undefined,{sensitivity:"base"});
+    });
 
+    saveSwimmers(swimmers);
     return swimmers;
-
 }
 
+function addSwimmer(name){
+    const cleanName = String(name || "").trim();
+    if(!cleanName){return null;}
 
-/* =====================================================
-   Render Swimmer Selectors
-===================================================== */
+    const swimmers = getSwimmers();
+    const existing = swimmers.find(function(swimmer){
+        return swimmer.name.toLowerCase() === cleanName.toLowerCase();
+    });
 
-function renderSwimmerSelectors(
-    selectedName
-){
+    if(existing){return existing;}
 
-    const selectors = [
+    const swimmer={id:createUniqueId(),name:cleanName};
+    swimmers.push(swimmer);
+    swimmers.sort(function(a,b){
+        return a.name.localeCompare(b.name,undefined,{sensitivity:"base"});
+    });
+    saveSwimmers(swimmers);
+    return swimmer;
+}
 
+function syncSwimmersFromHistory(){
+    return getSwimmers();
+}
+
+function renderSwimmerSelectors(selectedName){
+    const swimmers = getSwimmers();
+    const selectors=[
         document.getElementById("swimmer"),
-
         document.getElementById("manualSwimmer")
-
     ];
 
+    selectors.forEach(function(select){
+        if(!select){return;}
 
-    const swimmers =
-        syncSwimmersFromHistory()
-            .slice()
-            .sort(
-                function(a,b){
-                    return a.name.localeCompare(
-                        b.name,
-                        undefined,
-                        {
-                            sensitivity:"base"
-                        }
-                    );
-                }
-            );
+        const previous = selectedName || select.value || "";
+        select.innerHTML="";
 
+        const placeholder=document.createElement("option");
+        placeholder.value="";
+        placeholder.textContent="Select swimmer";
+        select.appendChild(placeholder);
 
-    selectors.forEach(
-        function(select){
+        swimmers.forEach(function(swimmer){
+            const option=document.createElement("option");
+            option.value=swimmer.name;
+            option.textContent=swimmer.name;
+            option.dataset.swimmerId=swimmer.id;
+            select.appendChild(option);
+        });
 
-            if(!select){
-                return;
-            }
-
-            select.innerHTML = "";
-
-
-            const placeholder =
-                document.createElement("option");
-
-            placeholder.value = "";
-
-            placeholder.textContent =
-                "Select swimmer";
-
-            select.appendChild(
-                placeholder
-            );
-
-
-            swimmers.forEach(
-                function(swimmer){
-
-                    const option =
-                        document.createElement("option");
-
-                    option.value = swimmer.name;
-
-                    option.textContent = swimmer.name;
-
-                    option.dataset.swimmerId =
-                        swimmer.id;
-
-                    if(
-                        selectedName
-                        &&
-                        swimmer.name === selectedName
-                    ){
-
-                        option.selected = true;
-
-                    }
-
-                    select.appendChild(option);
-
-                }
-            );
-
-
-            if(
-                selectedName
-                &&
-                swimmers.some(
-                    function(swimmer){
-                        return swimmer.name === selectedName;
-                    }
-                )
-            ){
-
-                select.value = selectedName;
-
-            }
-
+        if(previous && swimmers.some(function(swimmer){return swimmer.name === previous;})){
+            select.value=previous;
         }
-    );
-
+    });
 }
-
-
-/* =====================================================
-   Add Button + Validation
-===================================================== */
 
 function initialiseSwimmers(){
-
     renderSwimmerSelectors();
 
+    const addButton=document.getElementById("addSwimmerButton");
+    if(addButton && addButton.dataset.initialised !== "true"){
+        addButton.dataset.initialised="true";
+        addButton.addEventListener("click",function(){
+            const name=prompt("Enter swimmer name:");
+            if(name === null){return;}
 
-    const addButton =
-        document.getElementById(
-            "addSwimmerButton"
-        );
+            const cleanName=String(name).trim();
+            if(!cleanName){return;}
 
+            const swimmer=addSwimmer(cleanName);
+            if(swimmer){renderSwimmerSelectors(swimmer.name);}
+        });
+    }
 
-    if(addButton){
-
-        addButton.addEventListener(
-            "click",
-            function(){
-
-                const name =
-                    prompt(
-                        "Enter swimmer name:"
-                    );
-
-                if(name === null){
-                    return;
-                }
-
-
-                const cleanName =
-                    String(name).trim();
-
-                if(!cleanName){
-                    return;
-                }
-
-
-                const swimmers =
-                    getSwimmers();
-
-                const duplicate =
-                    swimmers.find(
-                        function(swimmer){
-                            return swimmer.name.toLowerCase()
-                                === cleanName.toLowerCase();
-                        }
-                    );
-
-
-                if(duplicate){
-
-                    renderSwimmerSelectors(
-                        duplicate.name
-                    );
-
-                    alert(
-                        duplicate.name
-                        +
-                        " is already in your swimmers."
-                    );
-
-                    return;
-
-                }
-
-
-                const swimmer =
-                    addSwimmer(cleanName);
-
-
-                if(swimmer){
-
-                    renderSwimmerSelectors(
-                        swimmer.name
-                    );
-
-                }
-
+    const startButton=document.getElementById("startButton");
+    const swimmerSelect=document.getElementById("swimmer");
+    if(startButton && swimmerSelect && startButton.dataset.swimmerValidation !== "true"){
+        startButton.dataset.swimmerValidation="true";
+        startButton.addEventListener("click",function(event){
+            if(!swimmerSelect.value){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                alert("Please select a swimmer.");
             }
-        );
-
+        },true);
     }
 
-
-    /*
-       Stop the main timer from starting when
-       no swimmer has been selected.
-    */
-
-    const startButton =
-        document.getElementById(
-            "startButton"
-        );
-
-    const swimmerSelect =
-        document.getElementById(
-            "swimmer"
-        );
-
-
-    if(startButton && swimmerSelect){
-
-        startButton.addEventListener(
-            "click",
-            function(event){
-
-                if(!swimmerSelect.value){
-
-                    event.preventDefault();
-
-                    event.stopImmediatePropagation();
-
-                    alert(
-                        "Please select a swimmer."
-                    );
-
-                }
-
-            },
-            true
-        );
-
+    const saveManualButton=document.getElementById("saveManualButton");
+    const manualSwimmer=document.getElementById("manualSwimmer");
+    if(saveManualButton && manualSwimmer && saveManualButton.dataset.swimmerValidation !== "true"){
+        saveManualButton.dataset.swimmerValidation="true";
+        saveManualButton.addEventListener("click",function(event){
+            if(!manualSwimmer.value){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                alert("Please select a swimmer.");
+            }
+        },true);
     }
-
-
-    /*
-       Manual results use the same swimmer list.
-       Prevent saving a manual result without
-       a swimmer selected.
-    */
-
-    const saveManualButton =
-        document.getElementById(
-            "saveManualButton"
-        );
-
-    const manualSwimmer =
-        document.getElementById(
-            "manualSwimmer"
-        );
-
-
-    if(saveManualButton && manualSwimmer){
-
-        saveManualButton.addEventListener(
-            "click",
-            function(event){
-
-                if(!manualSwimmer.value){
-
-                    event.preventDefault();
-
-                    event.stopImmediatePropagation();
-
-                    alert(
-                        "Please select a swimmer."
-                    );
-
-                }
-
-            },
-            true
-        );
-
-    }
-
 }
-
 
 /* =====================================================
    END OF FILE: swimmers.js
 ===================================================== */
-
