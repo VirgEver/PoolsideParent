@@ -26,6 +26,17 @@
         });
     }
 
+    function shortDate(value){
+        const text=String(value||"").trim();
+        const uk=text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if(uk){
+            return uk[1].padStart(2,"0")+"/"+uk[2].padStart(2,"0")+"/"+uk[3].slice(-2);
+        }
+        const parsed=new Date(text);
+        if(Number.isNaN(parsed.getTime())){ return text; }
+        return String(parsed.getDate()).padStart(2,"0")+"/"+String(parsed.getMonth()+1).padStart(2,"0")+"/"+String(parsed.getFullYear()).slice(-2);
+    }
+
     function swimDate(swim){
         const dateText=String(swim.date||"").trim();
         const uk=dateText.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
@@ -65,10 +76,10 @@
         }
         svg+="<polyline class='progressLine' points='"+line+"'></polyline>";
         points.forEach(function(point,index){
-            const date=escapeHTML(point.swim.date||"");
+            const fullDate=escapeHTML(point.swim.date||"");
+            const date=escapeHTML(shortDate(point.swim.date));
             const finalTime=escapeHTML(point.swim.finalTime||"");
-            svg+="<circle class='progressPoint' cx='"+x(index)+"' cy='"+y(point.seconds)+"' r='6'><title>"+date+": "+finalTime+"</title></circle>";
-            svg+="<text class='progressValue' x='"+x(index)+"' y='"+(y(point.seconds)-11)+"' text-anchor='middle'>"+finalTime+"</text>";
+            svg+="<circle class='progressPoint' cx='"+x(index)+"' cy='"+y(point.seconds)+"' r='6'><title>"+fullDate+": "+finalTime+"</title></circle>";
             if(points.length<=6 || index===0 || index===points.length-1){
                 svg+="<text class='progressDate' x='"+x(index)+"' y='"+(height-28)+"' text-anchor='middle'>"+date+"</text>";
             }
@@ -93,6 +104,6 @@
     }
 
     const style=document.createElement("style");
-    style.textContent="#progressScreen{padding-bottom:120px}#progressScreen h2{text-align:center;margin-bottom:8px}.progressEvent{text-align:center;font-weight:700;margin-bottom:16px}.progressChart{background:#fff;border:1px solid #d6dbe1;border-radius:12px;padding:8px;margin-bottom:16px;overflow:hidden}.progressChart svg{display:block;width:100%;height:auto}.progressGrid{stroke:#dfe4ea;stroke-width:1}.progressLine{fill:none;stroke:#1976d2;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.progressPoint{fill:#fff;stroke:#1976d2;stroke-width:4}.progressAxisLabel,.progressDate{fill:#555;font-size:12px}.progressValue{fill:#1f2937;font-size:12px;font-weight:700}.progressDirection,.progressEmpty{text-align:center;color:#555;font-size:13px}.progressEmpty{padding:36px 8px}@media(max-width:430px){.progressChart{padding:2px}.progressValue{font-size:11px}.progressAxisLabel,.progressDate{font-size:10px}}";
+    style.textContent="#progressScreen{padding-bottom:120px}#progressScreen h2{text-align:center;margin-bottom:8px}.progressEvent{text-align:center;font-weight:700;margin-bottom:16px}.progressChart{background:#fff;border:1px solid #d6dbe1;border-radius:12px;padding:8px;margin-bottom:16px;overflow:hidden}.progressChart svg{display:block;width:100%;height:auto}.progressGrid{stroke:#dfe4ea;stroke-width:1}.progressLine{fill:none;stroke:#1976d2;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.progressPoint{fill:#fff;stroke:#1976d2;stroke-width:4}.progressAxisLabel,.progressDate{fill:#555;font-size:18px;font-weight:600}.progressDirection,.progressEmpty{text-align:center;color:#555;font-size:15px}.progressEmpty{padding:36px 8px}@media(max-width:430px){.progressChart{padding:2px}}";
     document.head.appendChild(style);
 })();
