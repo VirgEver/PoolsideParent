@@ -22,6 +22,19 @@
 
             if(!swim || !swim.id){ return; }
 
+            const progressButton = document.createElement("button");
+            progressButton.type = "button";
+            progressButton.className = "historyProgressButton";
+            progressButton.setAttribute("aria-label", "View progress for this event");
+            progressButton.title = "View progress";
+            progressButton.textContent = "📈";
+            progressButton.addEventListener("click", function(event){
+                event.stopPropagation();
+                if(typeof showProgressChart === "function"){
+                    showProgressChart(swim);
+                }
+            });
+
             const button = document.createElement("button");
             button.type = "button";
             button.className = "historyDeleteButton";
@@ -39,6 +52,7 @@
                 deleteSwim(swim.id);
             });
 
+            item.appendChild(progressButton);
             item.appendChild(button);
         });
     }
@@ -69,8 +83,10 @@
     const style = document.createElement("style");
     style.textContent = `
         #historyScreen{padding-bottom:120px;}
-        .historyItem{position:relative;padding-right:46px;}
+        .historyItem{position:relative;padding-right:86px;}
+        .historyProgressButton{position:absolute;top:10px;right:40px;display:flex;align-items:center;justify-content:center;width:34px;height:34px;min-height:0;margin:0;padding:0;font-size:18px;line-height:1;border:0;border-radius:7px;background:transparent;}
         .historyDeleteButton{position:absolute;top:10px;right:0;display:flex;align-items:center;justify-content:center;width:34px;height:34px;min-height:0;margin:0;padding:0;font-size:18px;line-height:1;border:0;border-radius:7px;background:transparent;}
+        .historyProgressButton:active,
         .historyDeleteButton:active{transform:scale(.92);}
         .historyFilterButton.activeFilter{background:#d97706 !important;border-color:#b45309 !important;color:#ffffff !important;}
     `;
