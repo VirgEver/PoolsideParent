@@ -58,7 +58,7 @@
             return;
         }
 
-        const width=640, height=360, left=75, right=50, top=35, bottom=64;
+        const width=640, height=360, left=100, right=50, top=35, bottom=64;
         const plotWidth=width-left-right, plotHeight=height-top-bottom;
         let min=Math.min.apply(null,points.map(function(point){return point.seconds;}));
         let max=Math.max.apply(null,points.map(function(point){return point.seconds;}));
