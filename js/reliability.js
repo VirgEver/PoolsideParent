@@ -21,6 +21,18 @@
         saveBackupMeta(meta);return meta;
     }
 
+    function installExactBrandLogo(){
+        const oldLogo=document.querySelector(".brandHeader .brandLogo");
+        if(!oldLogo||oldLogo.tagName.toLowerCase()==="img"){return;}
+        const logo=document.createElement("img");
+        logo.className="brandLogo";
+        logo.src="./PoolsideParent-app-icon-final-512.png";
+        logo.alt="PoolsideParent logo";
+        logo.width=58;
+        logo.height=58;
+        oldLogo.replaceWith(logo);
+    }
+
     function downloadBackup(){
         const packageData={app:"Poolside Parent",backupVersion:1,storageVersion:typeof CURRENT_STORAGE_VERSION!=="undefined"?CURRENT_STORAGE_VERSION:null,exportedAt:nowIso(),database:getDatabase(),swimmers:typeof getSwimmers==="function"?getSwimmers():[]};
         const blob=new Blob([JSON.stringify(packageData,null,2)],{type:"application/json"});
@@ -65,5 +77,5 @@
     document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"){checkPendingUpdate();}});
     [document.getElementById("resultScreen"),document.getElementById("setupScreen")].forEach(function(screen){if(!screen){return;}new MutationObserver(checkPendingUpdate).observe(screen,{attributes:true,attributeFilter:["class"]});});
     window.poolsideBackupNow=downloadBackup;window.poolsideCheckBackupReminder=showBackupReminder;
-    window.addEventListener("load",function(){initialiseBackupMeta();registerServiceWorker();setTimeout(showBackupReminder,500);});
+    window.addEventListener("load",function(){installExactBrandLogo();initialiseBackupMeta();registerServiceWorker();setTimeout(showBackupReminder,500);});
 })();
