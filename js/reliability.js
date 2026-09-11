@@ -33,6 +33,16 @@
         oldLogo.replaceWith(logo);
     }
 
+    function styleBrandName(){
+        const brandName=document.querySelector(".brandName");
+        if(!brandName){return;}
+        brandName.style.color="#6f9fc6";
+        const firstP=brandName.querySelector(".brandP1");
+        const secondP=brandName.querySelector(".brandP2");
+        if(firstP){firstP.style.color="#0b356a";}
+        if(secondP){secondP.style.color="#0b356a";}
+    }
+
     function downloadBackup(){
         const packageData={app:"Poolside Parent",backupVersion:1,storageVersion:typeof CURRENT_STORAGE_VERSION!=="undefined"?CURRENT_STORAGE_VERSION:null,exportedAt:nowIso(),database:getDatabase(),swimmers:typeof getSwimmers==="function"?getSwimmers():[]};
         const blob=new Blob([JSON.stringify(packageData,null,2)],{type:"application/json"});
@@ -77,5 +87,5 @@
     document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"){checkPendingUpdate();}});
     [document.getElementById("resultScreen"),document.getElementById("setupScreen")].forEach(function(screen){if(!screen){return;}new MutationObserver(checkPendingUpdate).observe(screen,{attributes:true,attributeFilter:["class"]});});
     window.poolsideBackupNow=downloadBackup;window.poolsideCheckBackupReminder=showBackupReminder;
-    window.addEventListener("load",function(){installExactBrandLogo();initialiseBackupMeta();registerServiceWorker();setTimeout(showBackupReminder,500);});
+    window.addEventListener("load",function(){installExactBrandLogo();styleBrandName();initialiseBackupMeta();registerServiceWorker();setTimeout(showBackupReminder,500);});
 })();
