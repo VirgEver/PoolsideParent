@@ -153,4 +153,25 @@
 
 })();
 
+(function(){
+    if(!document.querySelector('link[rel="manifest"]')){
+        const manifest=document.createElement("link");
+        manifest.rel="manifest";
+        manifest.href="./manifest.webmanifest";
+        document.head.appendChild(manifest);
+    }
+
+    if(!document.querySelector('meta[name="theme-color"]')){
+        const theme=document.createElement("meta");
+        theme.name="theme-color";
+        theme.content="#0b67c2";
+        document.head.appendChild(theme);
+    }
+
+    const script=document.createElement("script");
+    script.src="./js/reliability.js";
+    script.defer=true;
+    document.body.appendChild(script);
+})();
+
 /* END OF FILE: result-edit.js */
