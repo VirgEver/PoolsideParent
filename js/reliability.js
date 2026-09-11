@@ -36,7 +36,7 @@
     function styleBrandName(){
         const brandName=document.querySelector(".brandName");
         if(!brandName){return;}
-        brandName.style.color="#6f9fc6";
+        brandName.style.color="#0b356a";
         const firstP=brandName.querySelector(".brandP1");
         const secondP=brandName.querySelector(".brandP2");
         if(firstP){firstP.style.color="#0b356a";}
