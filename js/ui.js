@@ -312,7 +312,7 @@ function buildHistory(){
 
     let html="";
     swims.forEach(function(swim){
-        html+="<div class='historyItem' data-swim-id='"+escapeHistoryAttribute(swim.id||"")+"'><div class='historyEvent'>"+escapeHistoryHTML(swim.swimmer)+" — "+escapeHistoryHTML(swim.distance)+" "+escapeHistoryHTML(swim.stroke)+"</div><div class='historyTime'>"+escapeHistoryHTML(swim.finalTime)+"</div><div class='historyMeta'>"+escapeHistoryHTML(swim.date)+"&nbsp;&nbsp;"+escapeHistoryHTML(swim.time)+"&nbsp;&nbsp;Pool: "+escapeHistoryHTML(swim.course)+"</div></div>";
+        html+="<div class='historyItem' data-swim-id='"+escapeHistoryAttribute(swim.id||"")+"'><div class='historyEvent'>"+escapeHistoryHTML(swim.swimmer)+" — "+escapeHistoryHTML(swim.distance)+" "+escapeHistoryHTML(swim.stroke)+"</div><div class='historyDetails'><div class='historyTime'>"+escapeHistoryHTML(swim.finalTime)+"</div><div class='historyMeta'><div>"+escapeHistoryHTML(swim.date)+"</div><div>"+escapeHistoryHTML(swim.time)+"</div></div></div></div>";
     });
     container.innerHTML=html;
 }
