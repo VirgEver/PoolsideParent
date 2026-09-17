@@ -257,6 +257,18 @@ function initialiseHistoryFilter(){
         }
         panel.classList.toggle("hidden",!opening);
         button.setAttribute("aria-expanded",opening?"true":"false");
+        if(opening){
+            requestAnimationFrame(function(){
+                let widestHeading=0;
+                panel.querySelectorAll(".historyFilterHeading").forEach(function(heading){
+                    widestHeading=Math.max(widestHeading,heading.getBoundingClientRect().width);
+                });
+                if(widestHeading){
+                    panel.style.setProperty("--history-filter-heading-width",Math.ceil(widestHeading)+"px");
+                }
+                button.scrollIntoView({behavior:"smooth",block:"start"});
+            });
+        }
     });
 
     panel.addEventListener("click",function(event){
