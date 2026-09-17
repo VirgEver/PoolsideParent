@@ -260,8 +260,12 @@ function initialiseHistoryFilter(){
         if(opening){
             requestAnimationFrame(function(){
                 let widestHeading=0;
-                panel.querySelectorAll(".historyFilterHeading").forEach(function(heading){
-                    widestHeading=Math.max(widestHeading,heading.getBoundingClientRect().width);
+                panel.querySelectorAll(".historyFilterSection").forEach(function(section){
+                    if(!section.querySelector('.historyFilterOption[data-value="All"]')){ return; }
+                    const heading=section.querySelector(".historyFilterHeading");
+                    if(heading){
+                        widestHeading=Math.max(widestHeading,heading.getBoundingClientRect().width);
+                    }
                 });
                 if(widestHeading){
                     panel.style.setProperty("--history-filter-heading-width",Math.ceil(widestHeading)+"px");
