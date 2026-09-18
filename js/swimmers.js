@@ -157,11 +157,20 @@ function initialiseSwimmers(){
     if(startButton && swimmerSelect && startButton.dataset.swimmerValidation !== "true"){
         startButton.dataset.swimmerValidation="true";
         startButton.addEventListener("click",function(event){
-            if(!swimmerSelect.value){
-                event.preventDefault();
-                event.stopImmediatePropagation();
-                alert("Please select a swimmer.");
+            if(swimmerSelect.value){ return; }
+
+            const firstSwimmer=Array.from(swimmerSelect.options).find(function(option){
+                return option.value;
+            });
+
+            if(firstSwimmer){
+                swimmerSelect.value=firstSwimmer.value;
+                return;
             }
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            alert("Please add a swimmer before starting the timer.");
         },true);
     }
 
