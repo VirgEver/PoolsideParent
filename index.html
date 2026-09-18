@@ -67,8 +67,9 @@
 .screenTitle{
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start;
   gap:10px;
+  padding-left:var(--screen-logo-offset, 0px);
   margin:0 0 14px !important;
   color:#174f87;
   font-size:2rem;
@@ -109,4 +110,16 @@
 <div class="historyFilterFooter"><button type="button" id="clearHistoryFiltersButton" class="historyFilterClear">CLEAR ALL</button><button type="button" id="applyHistoryFiltersButton" class="historyFilterApply">APPLY FILTERS</button></div>
 </div><button id="closeHistoryButton" class="primaryButton">BACK</button><input type="file" id="historyFileInput" accept=".json,application/json" hidden></div><div id="mergeMessage" class="mergeMessage"></div><div id="historyContainer"></div></section>
 <section id="progressScreen" class="hidden"><h2 class="screenTitle">Progress</h2><div id="progressEvent" class="progressEvent"></div><div id="progressChart" class="progressChart" aria-live="polite"></div><button id="closeProgressButton" class="primaryButton">BACK TO HISTORY</button></section>
-<script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/swimmers.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/progress-chart.js"></script><script src="js/result-edit.js"></script><script>(function(){function tidyDifference(){document.querySelectorAll('#resultScreen .pbDifference').forEach(function(el){if(el.querySelector('.differenceTime'))return;var t=el.textContent.trim(),p='Difference:';if(t.indexOf(p)!==0)return;el.innerHTML="<span class='differenceTitle'>Difference:</span><span class='differenceTime'>"+t.slice(p.length).trim()+"</span>"})}var c=document.getElementById('summaryCard');if(c){new MutationObserver(tidyDifference).observe(c,{childList:true,subtree:true});tidyDifference()}})();</script></div></body></html>
+<script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/swimmers.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/progress-chart.js"></script><script src="js/result-edit.js"></script><script>(function(){function tidyDifference(){document.querySelectorAll('#resultScreen .pbDifference').forEach(function(el){if(el.querySelector('.differenceTime'))return;var t=el.textContent.trim(),p='Difference:';if(t.indexOf(p)!==0)return;el.innerHTML="<span class='differenceTitle'>Difference:</span><span class='differenceTime'>"+t.slice(p.length).trim()+"</span>"})}var c=document.getElementById('summaryCard');if(c){new MutationObserver(tidyDifference).observe(c,{childList:true,subtree:true});tidyDifference()}})();</script><script>
+(function(){
+  function alignScreenLogos(){
+    var app=document.querySelector(".app");
+    var mainLogo=document.querySelector("#setupScreen .brandLogo");
+    if(!app || !mainLogo){ return; }
+    var offset=Math.max(0,Math.round(mainLogo.getBoundingClientRect().left-app.getBoundingClientRect().left));
+    document.documentElement.style.setProperty("--screen-logo-offset",offset+"px");
+  }
+  alignScreenLogos();
+  window.addEventListener("resize",alignScreenLogos);
+})();
+</script></div></body></html>
