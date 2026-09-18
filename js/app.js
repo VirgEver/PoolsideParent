@@ -37,8 +37,11 @@ function setPBComparison(enabled){
 }
 
 if(showPBInput && showPBYes && showPBNo){
-    showPBYes.addEventListener("click", function(){ setPBComparison(true); });
-    showPBNo.addEventListener("click", function(){ setPBComparison(false); });
+    function togglePBComparison(){
+        setPBComparison(!showPBInput.checked);
+    }
+    showPBYes.addEventListener("click", togglePBComparison);
+    showPBNo.addEventListener("click", togglePBComparison);
     setPBComparison(showPBInput.checked);
 }
 
