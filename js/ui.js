@@ -313,6 +313,21 @@ function initialiseHistoryFilter(){
     updateHistoryFilterButton();
 }
 
+function historyEntryTimeLabel(swim){
+    if(String(swim.time || "").trim() !== "Manual Entry"){
+        return swim.time || "";
+    }
+
+    const sourceLabels={
+        parent:"Parent",
+        coach:"Coach",
+        official:"Official Gala",
+        historical:"Historical"
+    };
+
+    return sourceLabels[swim.source] || "Manual Entry";
+}
+
 function buildHistory(){
     initialiseHistoryFilter();
     const container=document.getElementById("historyContainer");
@@ -328,7 +343,7 @@ function buildHistory(){
 
     let html="";
     swims.forEach(function(swim){
-        html+="<div class='historyItem' data-swim-id='"+escapeHistoryAttribute(swim.id||"")+"'><div class='historyEvent'>"+escapeHistoryHTML(swim.swimmer)+" — "+escapeHistoryHTML(swim.distance)+" "+escapeHistoryHTML(swim.stroke)+"</div><div class='historyDetails'><div class='historyTime'>"+escapeHistoryHTML(swim.finalTime)+"</div><div class='historyMeta'><div>"+escapeHistoryHTML(swim.date)+"</div><div>"+escapeHistoryHTML(swim.time)+"</div></div></div></div>";
+        html+="<div class='historyItem' data-swim-id='"+escapeHistoryAttribute(swim.id||"")+"'><div class='historyEvent'>"+escapeHistoryHTML(swim.swimmer)+" — "+escapeHistoryHTML(swim.distance)+" "+escapeHistoryHTML(swim.stroke)+"</div><div class='historyDetails'><div class='historyTime'>"+escapeHistoryHTML(swim.finalTime)+"</div><div class='historyMeta'><div>"+escapeHistoryHTML(swim.date)+"</div><div>"+escapeHistoryHTML(historyEntryTimeLabel(swim))+"</div></div></div></div>";
     });
     container.innerHTML=html;
 }
