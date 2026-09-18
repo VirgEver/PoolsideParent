@@ -215,4 +215,18 @@
   alignScreenLogos();
   window.addEventListener("resize",alignScreenLogos);
 })();
+</script><script>
+(function(){
+  function syncHistoryButtonWidths(){
+    var filterButton=document.getElementById("filterHistoryButton");
+    var backButton=document.getElementById("closeHistoryButton");
+    if(!filterButton || !backButton){ return; }
+    var backWidth=window.getComputedStyle(backButton).width;
+    if(parseFloat(backWidth)>0){
+      filterButton.style.width=backWidth;
+    }
+  }
+  syncHistoryButtonWidths();
+  window.addEventListener("resize",syncHistoryButtonWidths);
+})();
 </script></div></body></html>
