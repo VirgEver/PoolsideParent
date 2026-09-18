@@ -24,6 +24,24 @@ const cancelManualButton = document.getElementById("cancelManualButton");
 const discardResultButton = document.getElementById("discardResultButton");
 const historyFileInput = document.getElementById("historyFileInput");
 
+const showPBInput = document.getElementById("showPB");
+const showPBYes = document.getElementById("showPBYes");
+const showPBNo = document.getElementById("showPBNo");
+
+function setPBComparison(enabled){
+    showPBInput.checked = enabled;
+    showPBYes.classList.toggle("selected", enabled);
+    showPBNo.classList.toggle("selected", !enabled);
+    showPBYes.setAttribute("aria-pressed", enabled ? "true" : "false");
+    showPBNo.setAttribute("aria-pressed", enabled ? "false" : "true");
+}
+
+if(showPBInput && showPBYes && showPBNo){
+    showPBYes.addEventListener("click", function(){ setPBComparison(true); });
+    showPBNo.addEventListener("click", function(){ setPBComparison(false); });
+    setPBComparison(showPBInput.checked);
+}
+
 const sessionSwimmer = document.getElementById("sessionSwimmer");
 const sessionEvent = document.getElementById("sessionEvent");
 
