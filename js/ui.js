@@ -127,7 +127,20 @@ function renderHistoryFilterOptions(){
         swimmers.forEach(function(name){ html+='<button type="button" class="historyFilterOption" data-category="swimmers" data-value="'+escapeHistoryAttribute(name)+'">'+escapeHistoryHTML(name)+'</button>'; });
         swimmerBox.innerHTML=html;
     }
+    renderConfiguredFilterOptions("historyStrokeOptions","strokes",POOLSIDE_CONFIG.strokes);
+    renderConfiguredFilterOptions("historyDistanceOptions","distances",POOLSIDE_CONFIG.distances);
+    renderConfiguredFilterOptions("historyCourseOptions","courses",POOLSIDE_CONFIG.courses);
     syncHistoryFilterSelections();
+}
+
+function renderConfiguredFilterOptions(containerId,category,values){
+    const container=document.getElementById(containerId);
+    if(!container){ return; }
+    let html='<button type="button" class="historyFilterOption" data-category="'+category+'" data-value="All">All</button>';
+    values.forEach(function(value){
+        html+='<button type="button" class="historyFilterOption" data-category="'+category+'" data-value="'+escapeHistoryAttribute(value)+'">'+escapeHistoryHTML(value)+'</button>';
+    });
+    container.innerHTML=html;
 }
 
 function escapeHistoryHTML(value){
@@ -282,14 +295,7 @@ function historyEntryTimeLabel(swim){
         return swim.time || "";
     }
 
-    const sourceLabels={
-        parent:"Parent",
-        coach:"Coach",
-        official:"Official Gala",
-        historical:"Historical"
-    };
-
-    return sourceLabels[swim.source] || "Manual Entry";
+    return getResultSourceLabel(swim.source);
 }
 
 function buildHistory(){

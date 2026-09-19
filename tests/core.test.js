@@ -26,7 +26,7 @@ function loadCore(includeUI=false){
     };
     vm.createContext(context);
     const root=path.resolve(__dirname,"..");
-    ["js/utils.js","js/storage.js"].concat(includeUI ? ["js/ui.js"] : []).forEach(file => {
+    ["js/config.js","js/utils.js","js/storage.js"].concat(includeUI ? ["js/ui.js"] : []).forEach(file => {
         vm.runInContext(fs.readFileSync(path.join(root,file),"utf8"),context,{filename:file});
     });
     return context;
@@ -37,6 +37,26 @@ test("elapsed-time helpers preserve hundredths",() => {
     assert.equal(core.parseElapsedMilliseconds("01:23.45"),83450);
     assert.equal(core.formatElapsedMilliseconds(83459),"01:23.45");
     assert.ok(Number.isNaN(core.parseElapsedMilliseconds("1:72.00")));
+});
+
+test("swimming event choices have one configuration source",() => {
+    const core=loadCore();
+    assert.deepEqual(Array.from(core.POOLSIDE_CONFIG.strokes),["Freestyle","Backstroke","Breaststroke","Butterfly","IM"]);
+    assert.deepEqual(Array.from(core.POOLSIDE_CONFIG.courses),["25m","50m"]);
+    assert.equal(core.getResultSourceLabel("official"),"Official Gala");
+});
+
+test("index contains no embedded style or script patches",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    assert.equal(/<style(?:\s|>)/i.test(html),false);
+    assert.equal(/<script(?![^>]*\bsrc=)/i.test(html),false);
+});
+
+test("every secondary screen heading contains the real app icon",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    const headings=Array.from(html.matchAll(/<h2[^>]*class="[^"]*screenTitle[^"]*"[^>]*>(.*?)<\/h2>/g),match => match[1]);
+    assert.equal(headings.length,5);
+    headings.forEach(heading => assert.match(heading,/<img class="screenTitleLogo"[^>]*width="58"[^>]*height="58"/));
 });
 
 test("timestamp timing remains accurate after a long browser pause",() => {

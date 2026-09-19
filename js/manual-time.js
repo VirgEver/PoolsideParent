@@ -206,17 +206,7 @@ function saveManualSwim(){
     const dateString =
         dateObject.toLocaleDateString();
 
-    const sourceLabels = {
-        parent:"Parent",
-        coach:"Coach",
-        official:"Official Gala",
-        historical:"Historical"
-    };
-
-    const timeString =
-        sourceLabels[manualSource.value]
-        ||
-        "Manual Entry";
+    const timeString = getResultSourceLabel(manualSource.value);
 
 
     const swim = {

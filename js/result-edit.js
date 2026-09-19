@@ -11,9 +11,9 @@
 
     const fields = [
         { id:"resultSwimmer", label:"Swimmer", key:"swimmer", dynamicSwimmers:true },
-        { id:"resultStroke", label:"Stroke", key:"stroke", values:["Freestyle","Backstroke","Breaststroke","Butterfly","IM"] },
-        { id:"resultDistance", label:"Distance", key:"distance", values:["25m","50m","100m","200m","400m","800m"] },
-        { id:"resultCourse", label:"Pool", key:"course", values:["25m","50m"] }
+        { id:"resultStroke", label:"Stroke", key:"stroke", values:POOLSIDE_CONFIG.strokes },
+        { id:"resultDistance", label:"Distance", key:"distance", values:POOLSIDE_CONFIG.distances },
+        { id:"resultCourse", label:"Pool", key:"course", values:POOLSIDE_CONFIG.courses }
     ];
 
     function getSwimmerNames(){
