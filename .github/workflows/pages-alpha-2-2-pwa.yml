@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - test/alpha-2.2-pwa
+      - refactor/architecture-phase-1
   workflow_dispatch:
 
 permissions:
