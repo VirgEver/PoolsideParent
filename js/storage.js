@@ -5,7 +5,7 @@
 
 const STORAGE_KEY = "poolsideParentSwims";
 const PRE_MIGRATION_BACKUP_KEY = "poolsideParentPreMigrationBackup";
-const CURRENT_STORAGE_VERSION = 3;
+const CURRENT_STORAGE_VERSION = 4;
 
 function createUniqueId(){
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
@@ -16,11 +16,17 @@ function createEmptyDatabase(){
 }
 
 function prepareSwim(swim){
+    const eventTimestamp=parseSwimDateTime(swim);
+    const elapsedMilliseconds=parseElapsedMilliseconds(swim.finalTime);
     return {
         ...swim,
         id: swim.id || createUniqueId(),
         source: swim.source || "poolside",
-        createdAt: swim.createdAt || new Date().toISOString()
+        createdAt: swim.createdAt || new Date().toISOString(),
+        occurredAt: swim.occurredAt || (eventTimestamp ? new Date(eventTimestamp).toISOString() : null),
+        elapsedMilliseconds: Number.isFinite(swim.elapsedMilliseconds) ? swim.elapsedMilliseconds : (Number.isFinite(elapsedMilliseconds) ? elapsedMilliseconds : null),
+        distanceMetres: Number.isFinite(swim.distanceMetres) ? swim.distanceMetres : parseMetres(swim.distance),
+        courseMetres: Number.isFinite(swim.courseMetres) ? swim.courseMetres : parseMetres(swim.course)
     };
 }
 
@@ -47,7 +53,7 @@ function migrateStorageData(storedData){
         return { version: CURRENT_STORAGE_VERSION, swims: storedData.map(prepareSwim) };
     }
 
-    if(storedData.version === 2 && Array.isArray(storedData.swims)){
+    if((storedData.version === 2 || storedData.version === 3) && Array.isArray(storedData.swims)){
         return { ...storedData, version: CURRENT_STORAGE_VERSION, swims: storedData.swims.map(prepareSwim) };
     }
 
@@ -96,8 +102,6 @@ function saveSwim(swim){
     saveDatabase(database);
 }
 
-function clearDatabase(){ localStorage.removeItem(STORAGE_KEY); }
-
 function getSwimmerHistory(swimmer){
     return getSwims().filter(function(swim){ return swim.swimmer === swimmer; });
 }
@@ -109,13 +113,8 @@ function getEventHistory(swimmer, stroke, distance, course){
 }
 
 function timeToMilliseconds(time){
-    if(!time){ return Number.MAX_SAFE_INTEGER; }
-    const parts = time.split(":");
-    const minutes = parseInt(parts[0], 10);
-    const secondsParts = parts[1].split(".");
-    const seconds = parseInt(secondsParts[0], 10);
-    const hundredths = parseInt(secondsParts[1], 10);
-    return minutes * 60000 + seconds * 1000 + hundredths * 10;
+    const milliseconds=parseElapsedMilliseconds(time);
+    return Number.isFinite(milliseconds) ? milliseconds : Number.MAX_SAFE_INTEGER;
 }
 
 function getPersonalBest(swimmer, stroke, distance, course){
@@ -135,6 +134,15 @@ function calculateDifference(current, pb){
 
 function createSwimSignature(swim){
     return [swim.swimmer || "", swim.stroke || "", swim.distance || "", swim.course || "", swim.date || "", swim.time || "", swim.finalTime || ""].join("|");
+}
+
+function extractImportedSwims(importedData){
+    if(Array.isArray(importedData)){ return importedData; }
+    if(importedData && Array.isArray(importedData.swims)){ return importedData.swims; }
+    if(importedData && importedData.database && Array.isArray(importedData.database.swims)){
+        return importedData.database.swims;
+    }
+    throw new Error("No swim history found");
 }
 
 function mergeSwimHistory(importedSwims){

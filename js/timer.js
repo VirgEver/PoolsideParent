@@ -48,39 +48,7 @@ const splitContainer =
 ===================================================== */
 
 function formatTime(ms){
-
-    let minutes =
-        Math.floor(
-            ms / 60000
-        );
-
-    let seconds =
-        Math.floor(
-            (ms % 60000) / 1000
-        );
-
-    let hundredths =
-        Math.floor(
-            (ms % 1000) / 10
-        );
-
-    return String(minutes)
-            .padStart(2,"0")
-
-        + ":"
-
-        +
-
-        String(seconds)
-            .padStart(2,"0")
-
-        + "."
-
-        +
-
-        String(hundredths)
-            .padStart(2,"0");
-
+    return formatElapsedMilliseconds(ms);
 }
 
 
@@ -96,10 +64,7 @@ function updateTimer(){
 
     }
 
-    let elapsed =
-        Date.now()
-        -
-        startTime;
+    let elapsed = elapsedSince(startTime,Date.now());
 
     timerDisplay.innerHTML =
         formatTime(elapsed);
@@ -181,10 +146,7 @@ function recordSplit(){
 
     }
 
-    let elapsed =
-        Date.now()
-        -
-        startTime;
+    let elapsed = elapsedSince(startTime,Date.now());
 
     addSplit(elapsed);
 
@@ -339,10 +301,7 @@ function stopTimer(){
 
     clearInterval(interval);
 
-    let elapsed =
-        Date.now()
-        -
-        startTime;
+    let elapsed = elapsedSince(startTime,Date.now());
 
     finalTime =
         addSplit(elapsed);

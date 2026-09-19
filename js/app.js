@@ -11,9 +11,7 @@ var manualScreen = document.getElementById("manualScreen");
 const startButton = document.getElementById("startButton");
 const splitButton = document.getElementById("splitButton");
 const stopButton = document.getElementById("stopButton");
-const exportButton = document.getElementById("exportButton");
 const historyButton = document.getElementById("historyButton");
-const historyResultButton = document.getElementById("historyResultButton");
 const closeHistoryButton = document.getElementById("closeHistoryButton");
 const newSwimButton = document.getElementById("newSwimButton");
 const shareHistoryButton = document.getElementById("shareHistoryButton");
@@ -108,8 +106,8 @@ function loadSessionSettings(){
 }
 
 function updateTimingHeader(){
-    sessionSwimmer.innerHTML = currentSession.swimmer;
-    sessionEvent.innerHTML = currentSession.distance + " " + currentSession.stroke + " (" + currentSession.course + ")";
+    sessionSwimmer.textContent = currentSession.swimmer;
+    sessionEvent.textContent = currentSession.distance + " " + currentSession.stroke + " (" + currentSession.course + ")";
 }
 
 startButton.addEventListener("click",function(){
@@ -126,16 +124,8 @@ stopButton.addEventListener("click",function(){
     showResultScreen();
 });
 
-if(exportButton){
-    exportButton.addEventListener("click",function(){leaveResultScreen();exportCSV();});
-}
-
 if(historyButton){
     historyButton.addEventListener("click",function(){leaveResultScreen();showHistoryScreen();});
-}
-
-if(historyResultButton){
-    historyResultButton.addEventListener("click",function(){showHistoryScreen();});
 }
 
 if(closeHistoryButton){
@@ -168,16 +158,7 @@ historyFileInput.addEventListener("change",function(event){
     reader.onload = function(){
         try{
             const importedData = JSON.parse(reader.result);
-            let importedSwims;
-
-            if(Array.isArray(importedData)){
-                importedSwims = importedData;
-            }else if(Array.isArray(importedData.swims)){
-                importedSwims = importedData.swims;
-            }else{
-                throw new Error("No swim history found");
-            }
-
+            const importedSwims = extractImportedSwims(importedData);
             const result = mergeSwimHistory(importedSwims);
 
             if(typeof syncSwimmersFromHistory === "function"){

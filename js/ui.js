@@ -9,7 +9,7 @@ function buildResultSummary(previousPB){
     if(currentSession.showPB){
         if(previousPB){
             const difference = calculateDifference(finalTime, previousPB.finalTime);
-            pbHTML = "<div class='pbBox'><div class='pbTitle'>PB</div><div>" + previousPB.finalTime + "</div><div class='pbDifference'>Difference: " + difference + "</div></div>";
+            pbHTML = "<div class='pbBox'><div class='pbTitle'>PB</div><div>" + escapeHTML(previousPB.finalTime) + "</div><div class='pbDifference'>Difference: " + escapeHTML(difference) + "</div></div>";
         }else{
             pbHTML = "<div class='pbBox'><div class='pbTitle'>PB</div><div>First recorded swim</div></div>";
         }
@@ -18,14 +18,10 @@ function buildResultSummary(previousPB){
     splitData.forEach(function(split){
         splitHTML += "<div class='summarySplitRow'><div>L" + split.lap + "</div><div>" + split.lapTime + "</div><div>" + split.totalTime + "</div></div>";
     });
-    summaryCard.innerHTML = "<div class='summaryTitle'>" + currentSession.swimmer + "</div><div class='summaryEvent'>" + currentSession.distance + " " + currentSession.stroke + "</div><div class='finalHeading'>Final Time</div><div class='finalTime'>" + finalTime + "</div><div class='summarySplits'><div class='summarySplitsTitle'>Splits</div>" + splitHTML + "</div>" + pbHTML + "<div class='summarySmall'>" + sessionDate + "&nbsp;&nbsp;&nbsp;" + sessionTime + "</div>";
+    summaryCard.innerHTML = "<div class='summaryTitle'>" + escapeHTML(currentSession.swimmer) + "</div><div class='summaryEvent'>" + escapeHTML(currentSession.distance) + " " + escapeHTML(currentSession.stroke) + "</div><div class='finalHeading'>Final Time</div><div class='finalTime'>" + escapeHTML(finalTime) + "</div><div class='summarySplits'><div class='summarySplitsTitle'>Splits</div>" + splitHTML + "</div>" + pbHTML + "<div class='summarySmall'>" + escapeHTML(sessionDate) + "&nbsp;&nbsp;&nbsp;" + escapeHTML(sessionTime) + "</div>";
 }
 
-let resultDiscarded = false;
 function clearResultSummary(){ summaryCard.innerHTML = ""; }
-function getCurrentSwim(){
-    return {swimmer:currentSession.swimmer,stroke:currentSession.stroke,distance:currentSession.distance,course:currentSession.course,date:sessionDate,time:sessionTime,finalTime:finalTime,lengths:splitNumber,splits:getSplitData()};
-}
 function saveCurrentSwim(){
     let swim = getPendingSwim();
     if(!swim){ return; }
@@ -33,7 +29,7 @@ function saveCurrentSwim(){
     clearPendingSwim();
 }
 function discardResult(){ clearPendingSwim(); showSetupScreen(); }
-function finishSwim(previousPB){ buildResultSummary(previousPB); resultDiscarded = false; }
+function finishSwim(previousPB){ buildResultSummary(previousPB); }
 function leaveResultScreen(){ if(getPendingSwim()){ saveCurrentSwim(); } }
 
 /* =====================================================
@@ -57,42 +53,6 @@ function cloneHistoryFilters(filters){
         courses:filters.courses.slice(),
         pbOnly:filters.pbOnly === true
     };
-}
-
-function parseSwimDateTime(swim){
-    const direct = swim.dateTime || swim.datetime || swim.timestamp;
-    if(direct){
-        const directTime = Date.parse(direct);
-        if(!Number.isNaN(directTime)){ return directTime; }
-    }
-
-    const dateText = String(swim.date || "").trim();
-    const timeText = String(swim.time || "00:00:00").trim();
-    if(!dateText){
-        const created = Date.parse(swim.createdAt || "");
-        return Number.isNaN(created) ? 0 : created;
-    }
-
-    let year, month, day;
-    let match = dateText.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if(match){
-        day=Number(match[1]); month=Number(match[2])-1; year=Number(match[3]);
-    }else{
-        match=dateText.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-        if(match){
-            year=Number(match[1]); month=Number(match[2])-1; day=Number(match[3]);
-        }else{
-            const fallback=Date.parse(dateText);
-            return Number.isNaN(fallback) ? 0 : fallback;
-        }
-    }
-
-    let hours=0, minutes=0, seconds=0;
-    const timeMatch=timeText.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-    if(timeMatch){
-        hours=Number(timeMatch[1]); minutes=Number(timeMatch[2]); seconds=Number(timeMatch[3]||0);
-    }
-    return new Date(year,month,day,hours,minutes,seconds).getTime();
 }
 
 function swimFilterIdentity(swim,index){
@@ -127,17 +87,21 @@ function hasActiveHistoryFilters(filters){
     return filters.swimmers.length>0 || filters.strokes.length>0 || filters.distances.length>0 || filters.courses.length>0 || filters.pbOnly;
 }
 
+function swimMatchesFilters(swim,filters,pbKeys,index){
+    if(filters.swimmers.length && !filters.swimmers.includes(swim.swimmer)){ return false; }
+    if(filters.strokes.length && !filters.strokes.includes(swim.stroke)){ return false; }
+    if(filters.distances.length && !filters.distances.includes(swim.distance)){ return false; }
+    if(filters.courses.length && !filters.courses.includes(swim.course)){ return false; }
+    if(pbKeys && !pbKeys.has(swimFilterIdentity(swim,index))){ return false; }
+    return true;
+}
+
 function getFilteredHistorySwims(){
     const allSwims=getSwims().slice();
     const pbKeys=appliedHistoryFilters.pbOnly ? getHistoricalPBKeys(allSwims) : null;
 
     let swims=allSwims.filter(function(swim,index){
-        if(appliedHistoryFilters.swimmers.length && !appliedHistoryFilters.swimmers.includes(swim.swimmer)){ return false; }
-        if(appliedHistoryFilters.strokes.length && !appliedHistoryFilters.strokes.includes(swim.stroke)){ return false; }
-        if(appliedHistoryFilters.distances.length && !appliedHistoryFilters.distances.includes(swim.distance)){ return false; }
-        if(appliedHistoryFilters.courses.length && !appliedHistoryFilters.courses.includes(swim.course)){ return false; }
-        if(pbKeys && !pbKeys.has(swimFilterIdentity(swim,index))){ return false; }
-        return true;
+        return swimMatchesFilters(swim,appliedHistoryFilters,pbKeys,index);
     });
 
     swims.sort(function(a,b){ return parseSwimDateTime(b)-parseSwimDateTime(a); });
@@ -167,7 +131,7 @@ function renderHistoryFilterOptions(){
 }
 
 function escapeHistoryHTML(value){
-    return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    return escapeHTML(value);
 }
 function escapeHistoryAttribute(value){ return escapeHistoryHTML(value); }
 

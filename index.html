@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>PoolsideParent - Alpha 2.2.0 Test</title><link rel="stylesheet" href="css/main.css"><style>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0b67c2"><title>PoolsideParent - Alpha 2.2.0 Test</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="css/main.css"><style>
 #setupScreen{padding-bottom:120px}.row{flex-direction:row;align-items:center}.row label{margin-bottom:0}#setupScreen select{width:18ch}.swimmerSelectWrap{display:flex;align-items:center;gap:6px}.swimmerSelectWrap select{width:18ch}.swimmerAddButton{width:32px!important;min-width:32px!important;height:38px!important;min-height:38px!important;margin:0!important;padding:0!important;font-size:24px!important;line-height:1!important;border-radius:8px}.checkboxRow{justify-content:flex-start;gap:12px}.checkboxRow label{white-space:nowrap}.setupSecondaryActions{display:flex;justify-content:center;align-items:center;gap:12px;margin:0 auto 14px}.setupSecondaryActions button{margin:0}
 #manualButton,#historyButton{box-sizing:border-box!important;flex:1 1 0!important;width:0!important;min-width:0!important;height:46px!important;min-height:46px!important;max-height:46px!important;margin:0!important;padding:4px!important;font-family:inherit!important;font-size:16px!important;font-weight:700!important;line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important}
 #resultScreen{padding-bottom:120px}#resultScreen>.resultScreenTitle{text-align:center;margin:0 0 12px}.resultButtons{display:flex!important;align-items:stretch!important;gap:12px!important;margin-top:18px;margin-bottom:10px}.resultTopButtons{display:contents!important}.resultButtons button{box-sizing:border-box!important;flex:1 1 0!important;width:calc((100% - 12px)/2)!important;min-width:0!important;max-width:calc((100% - 12px)/2)!important;height:54px!important;min-height:54px!important;max-height:54px!important;margin:0!important;padding:4px!important;font-family:inherit!important;font-size:15px!important;font-weight:700!important;line-height:1.1!important;white-space:normal!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important}.resultButtons #newSwimButton{background:#2e7d32!important;color:#fff!important}.resultButtons #discardResultButton{background:#c62828!important;color:#fff!important}
@@ -203,30 +203,4 @@
 <div class="historyFilterFooter"><button type="button" id="clearHistoryFiltersButton" class="historyFilterClear">CLEAR ALL</button><button type="button" id="applyHistoryFiltersButton" class="historyFilterApply">APPLY FILTERS</button></div>
 </div><button id="closeHistoryButton" class="primaryButton">BACK</button><input type="file" id="historyFileInput" accept=".json,application/json" hidden></div><div id="mergeMessage" class="mergeMessage"></div><div id="historyContainer"></div></section>
 <section id="progressScreen" class="hidden"><h2 class="screenTitle">Progress</h2><div id="progressEvent" class="progressEvent"></div><div id="progressChart" class="progressChart" aria-live="polite"></div><button id="closeProgressButton" class="primaryButton">BACK TO HISTORY</button></section>
-<script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/swimmers.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/progress-chart.js"></script><script src="js/result-edit.js"></script><script>(function(){function tidyDifference(){document.querySelectorAll('#resultScreen .pbDifference').forEach(function(el){if(el.querySelector('.differenceTime'))return;var t=el.textContent.trim(),p='Difference:';if(t.indexOf(p)!==0)return;el.innerHTML="<span class='differenceTitle'>Difference:</span><span class='differenceTime'>"+t.slice(p.length).trim()+"</span>"})}var c=document.getElementById('summaryCard');if(c){new MutationObserver(tidyDifference).observe(c,{childList:true,subtree:true});tidyDifference()}})();</script><script>
-(function(){
-  function alignScreenLogos(){
-    var app=document.querySelector(".app");
-    var mainLogo=document.querySelector("#setupScreen .brandLogo");
-    if(!app || !mainLogo){ return; }
-    var offset=Math.max(0,Math.round(mainLogo.getBoundingClientRect().left-app.getBoundingClientRect().left));
-    document.documentElement.style.setProperty("--screen-logo-offset",offset+"px");
-  }
-  alignScreenLogos();
-  window.addEventListener("resize",alignScreenLogos);
-})();
-</script><script>
-(function(){
-  function syncHistoryButtonWidths(){
-    var filterButton=document.getElementById("filterHistoryButton");
-    var backButton=document.getElementById("closeHistoryButton");
-    if(!filterButton || !backButton){ return; }
-    var backWidth=window.getComputedStyle(backButton).width;
-    if(parseFloat(backWidth)>0){
-      filterButton.style.width=backWidth;
-    }
-  }
-  syncHistoryButtonWidths();
-  window.addEventListener("resize",syncHistoryButtonWidths);
-})();
-</script></div></body></html>
+<script src="js/utils.js"></script><script src="js/storage.js"></script><script src="js/export.js"></script><script src="js/timer.js"></script><script src="js/manual-time.js"></script><script src="js/ui.js"></script><script src="js/swimmers.js"></script><script src="js/app.js"></script><script src="js/history-edit.js"></script><script src="js/progress-chart.js"></script><script src="js/result-edit.js"></script><script src="js/reliability.js"></script><script src="js/layout.js"></script></div></body></html>

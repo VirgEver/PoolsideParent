@@ -142,36 +142,6 @@
         refreshControls();
     }
 
-    const style = document.createElement("style");
-    style.textContent = `
-        .resultEditPanel{margin:12px 0 18px;}
-        .resultEditRow{display:flex;align-items:center;gap:10px;margin:8px 0;}
-        .resultEditRow label{flex:0 0 90px;}
-        .resultEditRow select{flex:1;min-height:42px;font-size:16px;}
-    `;
-    document.head.appendChild(style);
-
-})();
-
-(function(){
-    if(!document.querySelector('link[rel="manifest"]')){
-        const manifest=document.createElement("link");
-        manifest.rel="manifest";
-        manifest.href="./manifest.webmanifest";
-        document.head.appendChild(manifest);
-    }
-
-    if(!document.querySelector('meta[name="theme-color"]')){
-        const theme=document.createElement("meta");
-        theme.name="theme-color";
-        theme.content="#0b67c2";
-        document.head.appendChild(theme);
-    }
-
-    const script=document.createElement("script");
-    script.src="./js/reliability.js";
-    script.defer=true;
-    document.body.appendChild(script);
 })();
 
 /* END OF FILE: result-edit.js */
