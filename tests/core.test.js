@@ -56,7 +56,7 @@ test("every secondary screen heading contains the real app icon",() => {
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     const headings=Array.from(html.matchAll(/<h2[^>]*class="[^"]*screenTitle[^"]*"[^>]*>(.*?)<\/h2>/g),match => match[1]);
     assert.equal(headings.length,5);
-    headings.forEach(heading => assert.match(heading,/<img class="screenTitleLogo"/));
+    headings.forEach(heading => assert.match(heading,/<img class="screenTitleLogo"[^>]*width="58"[^>]*height="58"/));
 });
 
 test("timestamp timing remains accurate after a long browser pause",() => {
