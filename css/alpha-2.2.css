@@ -73,12 +73,11 @@
   font-size:2rem;
   line-height:1;
 }
-.screenTitle::before{
-  content:"";
+.screenTitleLogo{
   width:58px;
   height:58px;
   flex:0 0 58px;
-  background:url("./PoolsideParent-app-icon-final-512.png") center/contain no-repeat;
+  object-fit:contain;
 }
 #manualScreen{
   padding-top:0;
@@ -88,7 +87,7 @@
     gap:8px;
     font-size:1.9rem;
   }
-  .screenTitle::before{
+  .screenTitleLogo{
     width:54px;
     height:54px;
     flex-basis:54px;

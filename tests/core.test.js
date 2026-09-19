@@ -52,6 +52,13 @@ test("index contains no embedded style or script patches",() => {
     assert.equal(/<script(?![^>]*\bsrc=)/i.test(html),false);
 });
 
+test("every secondary screen heading contains the real app icon",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    const headings=Array.from(html.matchAll(/<h2[^>]*class="[^"]*screenTitle[^"]*"[^>]*>(.*?)<\/h2>/g),match => match[1]);
+    assert.equal(headings.length,5);
+    headings.forEach(heading => assert.match(heading,/<img class="screenTitleLogo"/));
+});
+
 test("timestamp timing remains accurate after a long browser pause",() => {
     const core=loadCore();
     assert.equal(core.elapsedSince(1000,126000),125000);
