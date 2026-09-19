@@ -4,6 +4,7 @@ PoolsideParent remains a dependency-free, local-first progressive web app. The c
 
 ## Current boundaries
 
+- `config.js`: swimming-specific strokes, distances, course lengths and result-source labels.
 - `utils.js`: shared time, date, measurement and escaping helpers with no DOM or storage side effects.
 - `storage.js`: versioned persistence, migrations, PB lookup and merge-compatible import handling.
 - `timer.js`: active timing state based on real timestamps rather than interval tick counts.
