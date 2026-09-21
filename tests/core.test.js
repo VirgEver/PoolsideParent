@@ -88,6 +88,11 @@ test("every secondary screen heading contains the real app icon",() => {
     headings.forEach(heading => assert.match(heading,/<img class="screenTitleLogo"[^>]*width="58"[^>]*height="58"/));
 });
 
+test("chart overlay controls sit below the chart for one-handed use",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    assert.ok(html.indexOf('id="progressChart"')<html.indexOf('class="progressOverlayControls"'));
+});
+
 test("timestamp timing remains accurate after a long browser pause",() => {
     const core=loadCore();
     assert.equal(core.elapsedSince(1000,126000),125000);

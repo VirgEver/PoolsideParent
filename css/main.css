@@ -1120,7 +1120,7 @@ button{
 #progressScreen{padding-bottom:120px;}
 #progressScreen h2{text-align:center;margin-bottom:8px;}
 .progressEvent{text-align:center;font-weight:700;margin-bottom:16px;}
-.progressOverlayControls{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 10px;}
+.progressOverlayControls{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;}
 .progressOverlayControls span{font-size:13px;font-weight:700;color:#555;}
 .progressOverlayControls button{width:52px;height:34px;min-height:34px;margin:0;padding:0;border:1px solid #9aa4af;border-radius:9px;background:#eef1f4;color:#333;font-size:15px;}
 .progressOverlayControls button.selected{background:#1976d2;border-color:#155fa8;color:#fff;}
