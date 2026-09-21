@@ -26,7 +26,7 @@ function loadCore(includeUI=false){
     };
     vm.createContext(context);
     const root=path.resolve(__dirname,"..");
-    ["js/config.js","js/utils.js","js/storage.js"].concat(includeUI ? ["js/ui.js"] : []).forEach(file => {
+    ["js/config.js","js/utils.js","js/storage.js","js/performance.js"].concat(includeUI ? ["js/ui.js"] : []).forEach(file => {
         vm.runInContext(fs.readFileSync(path.join(root,file),"utf8"),context,{filename:file});
     });
     return context;
@@ -44,6 +44,35 @@ test("swimming event choices have one configuration source",() => {
     assert.deepEqual(Array.from(core.POOLSIDE_CONFIG.strokes),["Freestyle","Backstroke","Breaststroke","Butterfly","IM"]);
     assert.deepEqual(Array.from(core.POOLSIDE_CONFIG.courses),["25m","50m"]);
     assert.equal(core.getResultSourceLabel("official"),"Official Gala");
+    assert.deepEqual({...core.POOLSIDE_CONFIG.season},{type:"calendar-year",startMonth:1,startDay:1});
+});
+
+test("calendar-year seasons reset on 1 January",() => {
+    const core=loadCore();
+    assert.equal(core.getSeasonDescriptor(new Date(2025,11,31).getTime()).label,"2025");
+    assert.equal(core.getSeasonDescriptor(new Date(2026,0,1).getTime()).label,"2026");
+});
+
+test("a later custom season profile can cross calendar years",() => {
+    const core=loadCore();
+    const rule={startMonth:9,startDay:1};
+    assert.equal(core.getSeasonDescriptor(new Date(2026,7,31).getTime(),rule).label,"2025/26");
+    assert.equal(core.getSeasonDescriptor(new Date(2026,8,1).getTime(),rule).label,"2026/27");
+});
+
+test("PB continues across years while SB resets for each calendar year",() => {
+    const core=loadCore();
+    const series=core.buildPerformanceSeries([
+        {date:"10/12/2025",time:"10:00",finalTime:"01:10.00"},
+        {date:"20/12/2025",time:"10:00",finalTime:"01:09.00"},
+        {date:"05/01/2026",time:"10:00",finalTime:"01:11.00"},
+        {date:"01/02/2026",time:"10:00",finalTime:"01:08.00"}
+    ]);
+    assert.deepEqual(series.map(point=>point.isPB),[true,true,false,true]);
+    assert.deepEqual(series.map(point=>point.isSB),[true,true,true,true]);
+    assert.deepEqual(series.map(point=>point.seasonLabel),["2025","2025","2026","2026"]);
+    assert.equal(series[2].pbMilliseconds,69000);
+    assert.equal(series[2].sbMilliseconds,71000);
 });
 
 test("index contains no embedded style or script patches",() => {

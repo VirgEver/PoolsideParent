@@ -1,5 +1,6 @@
 /* Swimming-specific choices kept outside the reusable timing/data core. */
 var POOLSIDE_CONFIG=Object.freeze({
+    season:Object.freeze({type:"calendar-year",startMonth:1,startDay:1}),
     strokes:["Freestyle","Backstroke","Breaststroke","Butterfly","IM"],
     distances:["25m","50m","100m","200m","400m","800m"],
     courses:["25m","50m"],
@@ -12,6 +13,7 @@ var POOLSIDE_CONFIG=Object.freeze({
 });
 
 function getResultSourceLabel(value){
+    if(value==="poolside"){ return "Poolside"; }
     const source=POOLSIDE_CONFIG.resultSources.find(function(item){ return item.value === value; });
     return source ? source.label : "Manual Entry";
 }

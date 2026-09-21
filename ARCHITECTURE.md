@@ -7,6 +7,7 @@ PoolsideParent remains a dependency-free, local-first progressive web app. The c
 - `config.js`: swimming-specific strokes, distances, course lengths and result-source labels.
 - `utils.js`: shared time, date, measurement and escaping helpers with no DOM or storage side effects.
 - `storage.js`: versioned persistence, migrations, PB lookup and merge-compatible import handling.
+- `performance.js`: season assignment plus historical PB/SB progression calculations used by chart overlays.
 - `timer.js`: active timing state based on real timestamps rather than interval tick counts.
 - `ui.js`, `layout.js`, `history-edit.js`, `result-edit.js`: presentation and user interaction.
 - `progress-chart.js`: swimming performance visualisation.
@@ -25,6 +26,8 @@ Existing display fields remain supported. Migration adds canonical fields withou
 ## Direction
 
 The reusable domain is participant + event + attempt + elapsed time + splits + standards. Swimming-specific strokes, pool lengths and terminology should remain at the presentation/configuration layer. A future athletics product can reuse the domain concepts without weakening PoolsideParent's swimming-focused interface.
+
+The active SB season is currently a calendar year. Its start month/day live in `config.js`, allowing later jurisdiction or organisation profiles without changing stored results.
 
 ## Guardrails
 
