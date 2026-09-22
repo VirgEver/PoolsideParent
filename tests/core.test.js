@@ -84,13 +84,33 @@ test("index contains no embedded style or script patches",() => {
 test("every secondary screen heading contains the real app icon",() => {
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     const headings=Array.from(html.matchAll(/<h2[^>]*class="[^"]*screenTitle[^"]*"[^>]*>(.*?)<\/h2>/g),match => match[1]);
-    assert.equal(headings.length,5);
+    assert.equal(headings.length,6);
     headings.forEach(heading => assert.match(heading,/<img class="screenTitleLogo"[^>]*width="58"[^>]*height="58"/));
+});
+
+test("the grey settings control sits directly below Manual Time",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    assert.match(html,/id="manualButton"[\s\S]*id="historyButton"[\s\S]*id="settingsButton"/);
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/#settingsButton\{grid-column:1;background:#6b7280/);
 });
 
 test("chart overlay controls sit below the chart for one-handed use",() => {
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
-    assert.ok(html.indexOf('id="progressChart"')<html.indexOf('class="progressOverlayControls"'));
+    assert.ok(html.indexOf('id="progressChart"')<html.indexOf('id="toggleOverlayPanel"'));
+});
+
+test("standards packs validate and remain outside swim history",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack={
+        schemaVersion:1,id:"north-test",standardType:"RQT",competition:"Test",region:"North Wales",
+        year:2026,poolLengthMetres:25,ageAsOf:"2026-12-31",ageGroups:["12","13","17+"],
+        events:[{stroke:"freestyle",distanceMetres:50,male:["00:40.0","00:38.0","00:30.0"],female:["00:41.0","00:39.0","00:31.0"]}]
+    };
+    assert.equal(core.saveStandardsPack(pack).replaced,false);
+    assert.equal(core.getStandardsPacks().length,1);
+    assert.equal(core.getSwims().length,0);
 });
 
 test("Phase 3 preview and history exports use the Alpha 2.3.0 label",() => {
