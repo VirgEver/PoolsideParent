@@ -93,6 +93,12 @@ test("chart overlay controls sit below the chart for one-handed use",() => {
     assert.ok(html.indexOf('id="progressChart"')<html.indexOf('class="progressOverlayControls"'));
 });
 
+test("Phase 3 preview and history exports use the Alpha 2.3.0 label",() => {
+    const root=path.resolve(__dirname,"..");
+    assert.match(fs.readFileSync(path.join(root,"index.html"),"utf8"),/Alpha 2\.3\.0 Test/);
+    assert.match(fs.readFileSync(path.join(root,"js\/export.js"),"utf8"),/version:"Alpha 2\.3\.0"/);
+});
+
 test("timestamp timing remains accurate after a long browser pause",() => {
     const core=loadCore();
     assert.equal(core.elapsedSince(1000,126000),125000);
