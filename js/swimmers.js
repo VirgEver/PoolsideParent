@@ -33,7 +33,9 @@ function normaliseSwimmerList(raw){
 
         return {
             id: oldObject && oldObject.id ? oldObject.id : createUniqueId(),
-            name:name
+            name:name,
+            dateOfBirth:oldObject && /^\d{4}-\d{2}-\d{2}$/.test(String(oldObject.dateOfBirth || "")) ? oldObject.dateOfBirth : "",
+            category:oldObject && (oldObject.category === "male" || oldObject.category === "female") ? oldObject.category : ""
         };
     });
 }
@@ -89,13 +91,34 @@ function addSwimmer(name){
 
     if(existing){return existing;}
 
-    const swimmer={id:createUniqueId(),name:cleanName};
+    const swimmer={id:createUniqueId(),name:cleanName,dateOfBirth:"",category:""};
     swimmers.push(swimmer);
     swimmers.sort(function(a,b){
         return a.name.localeCompare(b.name,undefined,{sensitivity:"base"});
     });
     saveSwimmers(swimmers);
     return swimmer;
+}
+
+function updateSwimmerProfile(id,dateOfBirth,category){
+    const swimmers=getSwimmers();
+    const swimmer=swimmers.find(function(item){return item.id===id;});
+    if(!swimmer){ throw new Error("Swimmer not found"); }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)){
+        throw new Error("Enter a valid date of birth");
+    }
+    if(category !== "male" && category !== "female"){
+        throw new Error("Select a competition category");
+    }
+    swimmer.dateOfBirth=dateOfBirth;
+    swimmer.category=category;
+    saveSwimmers(swimmers);
+    return swimmer;
+}
+
+function getSwimmerByName(name){
+    const wanted=String(name || "").trim().toLowerCase();
+    return getSwimmers().find(function(swimmer){return swimmer.name.toLowerCase()===wanted;}) || null;
 }
 
 function syncSwimmersFromHistory(){
@@ -106,7 +129,8 @@ function renderSwimmerSelectors(selectedName){
     const swimmers = getSwimmers();
     const selectors=[
         document.getElementById("swimmer"),
-        document.getElementById("manualSwimmer")
+        document.getElementById("manualSwimmer"),
+        document.getElementById("settingsSwimmer")
     ];
 
     selectors.forEach(function(select){
@@ -122,13 +146,13 @@ function renderSwimmerSelectors(selectedName){
 
         swimmers.forEach(function(swimmer){
             const option=document.createElement("option");
-            option.value=swimmer.name;
+            option.value=select.id === "settingsSwimmer" ? swimmer.id : swimmer.name;
             option.textContent=swimmer.name;
             option.dataset.swimmerId=swimmer.id;
             select.appendChild(option);
         });
 
-        if(previous && swimmers.some(function(swimmer){return swimmer.name === previous;})){
+        if(previous && swimmers.some(function(swimmer){return swimmer.name === previous || swimmer.id === previous;})){
             select.value=previous;
         }
     });
