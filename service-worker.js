@@ -1,4 +1,4 @@
-const CACHE_NAME = "poolside-parent-pwa-v37";
+const CACHE_NAME = "poolside-parent-pwa-v38";
 
 const APP_FILES = [
   "./index.html",
@@ -13,6 +13,7 @@ const APP_FILES = [
   "./js/manual-time.js",
   "./js/ui.js",
   "./js/swimmers.js",
+  "./js/standards.js",
   "./js/app.js",
   "./js/history-edit.js",
   "./js/progress-chart.js",
