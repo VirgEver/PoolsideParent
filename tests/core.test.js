@@ -111,6 +111,10 @@ test("standards packs validate and remain outside swim history",() => {
     assert.equal(core.saveStandardsPack(pack).replaced,false);
     assert.equal(core.getStandardsPacks().length,1);
     assert.equal(core.getSwims().length,0);
+    const profile={dateOfBirth:"2013-06-15",category:"male"};
+    const event={stroke:"Freestyle",distance:"50m",course:"25m"};
+    assert.equal(core.standardTimeForSelection(pack,profile,event,"2025-12-31").time,"00:40.0");
+    assert.equal(core.standardTimeForSelection(pack,profile,event,"2026-12-31").time,"00:38.0");
 });
 
 test("Phase 3 preview and history exports use the Alpha 2.3.0 label",() => {
