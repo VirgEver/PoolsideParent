@@ -6,9 +6,17 @@
     const pointDetails=document.getElementById("progressPointDetails");
     const pbButton=document.getElementById("togglePBOverlay");
     const sbButton=document.getElementById("toggleSBOverlay");
+    const rqtButton=document.getElementById("toggleRQTOverlay");
+    const overlayButton=document.getElementById("toggleOverlayPanel");
+    const overlayPanel=document.getElementById("progressOverlayPanel");
+    const overlayStatus=document.getElementById("progressOverlayStatus");
+    const overlayMessage=document.getElementById("progressOverlayMessage");
+    const clearOverlaysButton=document.getElementById("clearProgressOverlays");
+    const closeOverlaysButton=document.getElementById("closeProgressOverlays");
     const closeButton=document.getElementById("closeProgressButton");
-    const overlays={pb:false,sb:false};
+    const overlays={pb:false,sb:false,rqt:false};
     let currentSwims=[];
+    let currentSelection=null;
 
     function shortDate(value){
         const text=String(value || "").trim();
@@ -24,11 +32,29 @@
     }
 
     function syncOverlayButtons(){
-        [[pbButton,overlays.pb],[sbButton,overlays.sb]].forEach(function(entry){
+        [[pbButton,overlays.pb],[sbButton,overlays.sb],[rqtButton,overlays.rqt]].forEach(function(entry){
             if(!entry[0]){ return; }
             entry[0].classList.toggle("selected",entry[1]);
             entry[0].setAttribute("aria-pressed",entry[1] ? "true" : "false");
         });
+        const enabled=Object.keys(overlays).filter(function(key){return overlays[key];}).map(function(key){return key.toUpperCase();});
+        if(overlayButton){overlayButton.classList.toggle("activeFilter",enabled.length>0);}
+        if(overlayStatus){
+            overlayStatus.textContent=enabled.join(" • ");
+            overlayStatus.classList.toggle("hidden",enabled.length===0);
+        }
+    }
+
+    function buildOptionalStepPath(values,x,y){
+        let path="",open=false,previousIndex=-1;
+        values.forEach(function(value,index){
+            if(!Number.isFinite(value)){open=false;previousIndex=-1;return;}
+            if(!open){path+=(path ? " " : "")+"M "+x(index)+" "+y(value);open=true;}
+            else if(previousIndex===index-1){path+=" H "+x(index)+" V "+y(value);}
+            else{path+=" M "+x(index)+" "+y(value);}
+            previousIndex=index;
+        });
+        return path;
     }
 
     function pointDetailText(point){
@@ -69,8 +95,11 @@
 
         const width=640,height=380,left=100,right=50,top=42,bottom=72;
         const plotWidth=width-left-right,plotHeight=height-top-bottom;
-        let min=Math.min.apply(null,points.map(function(point){return point.milliseconds;}));
-        let max=Math.max.apply(null,points.map(function(point){return point.milliseconds;}));
+        const rqt=typeof buildStandardsOverlay === "function" ? buildStandardsOverlay(points,currentSelection,"RQT") : {values:[],message:""};
+        const scaleValues=points.map(function(point){return point.milliseconds;});
+        if(overlays.rqt){rqt.values.filter(Number.isFinite).forEach(function(value){scaleValues.push(value);});}
+        let min=Math.min.apply(null,scaleValues);
+        let max=Math.max.apply(null,scaleValues);
         const padding=Math.max((max-min)*0.12,500);
         min-=padding; max+=padding;
         const x=function(index){return points.length===1 ? left+(plotWidth/2) : left+(index*plotWidth/(points.length-1));};
@@ -101,6 +130,10 @@
             svg+="<path class='progressOverlayLine progressPBLine' d='"+buildStepPath(points,"pbMilliseconds",x,y)+"'></path>";
         }
 
+        if(overlays.rqt && rqt.values.some(Number.isFinite)){
+            svg+="<path class='progressOverlayLine progressRQTLine' d='"+buildOptionalStepPath(rqt.values,x,y)+"'></path>";
+        }
+
         svg+="<polyline class='progressLine' points='"+performanceLine+"'></polyline>";
         const labelEvery=Math.max(1,Math.ceil(points.length/6));
         points.forEach(function(point,index){
@@ -115,11 +148,13 @@
         const legends=[];
         if(overlays.pb){ legends.push("<span class='progressLegendPB'>PB progression</span>"); }
         if(overlays.sb){ legends.push("<span class='progressLegendSB'>SB progression</span>"); }
+        if(overlays.rqt && rqt.values.some(Number.isFinite)){ legends.push("<span class='progressLegendRQT'>RQT</span>"); }
         if(legends.length){ svg+="<div class='progressLegend'>"+legends.join("")+"</div>"; }
         svg+="<div class='progressDirection'>Oldest → newest · Faster times move down</div>";
         progressChart.innerHTML=svg;
         attachPointInteractions(points);
         if(pointDetails){ pointDetails.textContent="Tap a point for swim details."; }
+        if(overlayMessage){overlayMessage.textContent=overlays.rqt ? rqt.message : "";}
     }
 
     function toggleOverlay(name){
@@ -129,11 +164,16 @@
     }
 
     window.showProgressChart=function(selected){
+        currentSelection=selected;
         currentSwims=getSwims().filter(function(swim){return sameEvent(swim,selected);});
         overlays.pb=false;
         overlays.sb=false;
+        overlays.rqt=false;
         syncOverlayButtons();
-        document.querySelectorAll("#setupScreen,#timingScreen,#resultScreen,#manualScreen,#historyScreen").forEach(function(screen){screen.classList.add("hidden");});
+        if(overlayPanel){overlayPanel.classList.add("hidden");}
+        if(overlayButton){overlayButton.setAttribute("aria-expanded","false");}
+        if(overlayMessage){overlayMessage.textContent="";}
+        document.querySelectorAll("#setupScreen,#timingScreen,#resultScreen,#manualScreen,#historyScreen,#settingsScreen").forEach(function(screen){screen.classList.add("hidden");});
         progressEvent.textContent=selected.swimmer+" — "+selected.distance+" "+selected.stroke+" — "+selected.course+" pool";
         renderChart(currentSwims);
         progressScreen.classList.remove("hidden");
@@ -141,6 +181,27 @@
 
     if(pbButton){ pbButton.addEventListener("click",function(){toggleOverlay("pb");}); }
     if(sbButton){ sbButton.addEventListener("click",function(){toggleOverlay("sb");}); }
+    if(rqtButton){ rqtButton.addEventListener("click",function(){toggleOverlay("rqt");}); }
+    if(overlayButton){
+        overlayButton.addEventListener("click",function(){
+            const opening=overlayPanel.classList.contains("hidden");
+            overlayPanel.classList.toggle("hidden",!opening);
+            overlayButton.setAttribute("aria-expanded",opening ? "true" : "false");
+        });
+    }
+    if(clearOverlaysButton){
+        clearOverlaysButton.addEventListener("click",function(){
+            Object.keys(overlays).forEach(function(key){overlays[key]=false;});
+            syncOverlayButtons();
+            renderChart(currentSwims);
+        });
+    }
+    if(closeOverlaysButton){
+        closeOverlaysButton.addEventListener("click",function(){
+            overlayPanel.classList.add("hidden");
+            overlayButton.setAttribute("aria-expanded","false");
+        });
+    }
     if(closeButton){
         closeButton.addEventListener("click",function(){
             progressScreen.classList.add("hidden");
