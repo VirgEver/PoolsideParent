@@ -100,6 +100,14 @@ test("chart overlay controls sit below the chart for one-handed use",() => {
     assert.ok(html.indexOf('id="progressChart"')<html.indexOf('id="toggleOverlayPanel"'));
 });
 
+test("chart overlays mirror the compact filter layout and legend colours",() => {
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/\.progressOverlayPanel \.historyFilterSection\{[\s\S]*?display:flex;[\s\S]*?border-bottom:1px solid #ddd;/);
+    assert.match(css,/\.progressLegendPB\{color:#d97706\}/);
+    assert.match(css,/\.progressLegendSB\{color:#2e7d32\}/);
+    assert.match(css,/\.progressLegendRQT\{color:#7c3aed\}/);
+});
+
 test("standards packs validate and remain outside swim history",() => {
     const core=loadCore();
     vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
