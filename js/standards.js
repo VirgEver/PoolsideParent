@@ -70,14 +70,14 @@ function ageOnDate(dateOfBirth,referenceDate){
     return age;
 }
 
-function standardTimeForSelection(pack,profile,selected){
+function standardTimeForSelection(pack,profile,selected,ageReferenceDate){
     if(!pack || !profile || !selected){return null;}
     if(pack.poolLengthMetres!==parseMetres(selected.course)){return null;}
     const event=pack.events.find(function(item){
         return standardStrokeKey(item.stroke)===standardStrokeKey(selected.stroke) && Number(item.distanceMetres)===parseMetres(selected.distance);
     });
     if(!event){return null;}
-    const age=ageOnDate(profile.dateOfBirth,pack.ageAsOf);
+    const age=ageOnDate(profile.dateOfBirth,ageReferenceDate || pack.ageAsOf);
     if(!Number.isFinite(age)){return null;}
     const ageIndex=pack.ageGroups.findIndex(function(group){
         if(String(group).endsWith("+")){return age>=Number(String(group).replace("+",""));}
@@ -98,16 +98,26 @@ function buildStandardsOverlay(points,selected,standardType){
         return String(pack.standardType).toUpperCase()===String(standardType).toUpperCase();
     });
     if(!packs.length){return {values:points.map(function(){return null;}),message:"Import an "+standardType+" standards pack in Settings first."};}
+    packs.sort(function(a,b){return a.year-b.year;});
+    let usedAgeContext=false;
     const values=points.map(function(point){
         const year=Number(point.seasonId);
-        const pack=packs.find(function(item){return item.year===year;});
-        const standard=standardTimeForSelection(pack,profile,selected);
+        let pack=packs.find(function(item){return item.year===year;});
+        if(!pack && Number.isFinite(year) && year<=packs[packs.length-1].year){
+            pack=packs.filter(function(item){return item.year<=year;}).pop() || packs[0];
+            usedAgeContext=true;
+        }
+        if(!pack){return null;}
+        const ageReferenceDate=String(year)+String(pack.ageAsOf).slice(4);
+        const standard=standardTimeForSelection(pack,profile,selected,ageReferenceDate);
         return standard ? standard.milliseconds : null;
     });
     const hasValue=values.some(Number.isFinite);
     return {
         values:values,
-        message:hasValue ? "" : "No matching "+standardType+" standard is installed for this event, course and season."
+        message:hasValue
+            ? (usedAgeContext ? "Earlier seasons use the nearest installed "+standardType+" table adjusted for the swimmer's age." : "")
+            : "No matching "+standardType+" standard is installed for this event, course and season."
     };
 }
 
