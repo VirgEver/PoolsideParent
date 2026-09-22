@@ -7,6 +7,8 @@ const timingScreen = document.getElementById("timingScreen");
 const resultScreen = document.getElementById("resultScreen");
 const historyScreen = document.getElementById("historyScreen");
 var manualScreen = document.getElementById("manualScreen");
+const settingsScreen = document.getElementById("settingsScreen");
+const progressScreen = document.getElementById("progressScreen");
 
 const startButton = document.getElementById("startButton");
 const splitButton = document.getElementById("splitButton");
@@ -17,6 +19,8 @@ const newSwimButton = document.getElementById("newSwimButton");
 const shareHistoryButton = document.getElementById("shareHistoryButton");
 const mergeHistoryButton = document.getElementById("mergeHistoryButton");
 const manualButton = document.getElementById("manualButton");
+const settingsButton = document.getElementById("settingsButton");
+const closeSettingsButton = document.getElementById("closeSettingsButton");
 const saveManualButton = document.getElementById("saveManualButton");
 const cancelManualButton = document.getElementById("cancelManualButton");
 const discardResultButton = document.getElementById("discardResultButton");
@@ -60,6 +64,8 @@ function hideAllScreens(){
     resultScreen.classList.add("hidden");
     historyScreen.classList.add("hidden");
     if(manualScreen){manualScreen.classList.add("hidden");}
+    if(settingsScreen){settingsScreen.classList.add("hidden");}
+    if(progressScreen){progressScreen.classList.add("hidden");}
 }
 
 function showSetupScreen(){
@@ -95,6 +101,13 @@ function showManualScreen(){
     if(typeof renderSwimmerSelectors === "function"){renderSwimmerSelectors();}
     manualScreen.classList.remove("hidden");
     initialiseManualScreen();
+}
+
+function showSettingsScreen(){
+    leaveResultScreen();
+    hideAllScreens();
+    if(typeof prepareSettingsScreen === "function"){prepareSettingsScreen();}
+    settingsScreen.classList.remove("hidden");
 }
 
 function loadSessionSettings(){
@@ -186,6 +199,8 @@ historyFileInput.addEventListener("change",function(event){
 });
 
 manualButton.addEventListener("click",function(){showManualScreen();});
+if(settingsButton){settingsButton.addEventListener("click",function(){showSettingsScreen();});}
+if(closeSettingsButton){closeSettingsButton.addEventListener("click",function(){showSetupScreen();});}
 saveManualButton.addEventListener("click",function(){saveManualSwim();});
 cancelManualButton.addEventListener("click",function(){showSetupScreen();});
 
