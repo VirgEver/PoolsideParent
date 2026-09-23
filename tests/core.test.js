@@ -126,6 +126,7 @@ test("chart overlays mirror the compact filter layout and legend colours",() => 
     assert.match(css,/\.progressLegendRCT\{color:#0f766e\}/);
     assert.match(css,/\.progressLegendNQT\{color:#b91c1c\}/);
     assert.match(css,/\.progressLegendNCT\{color:#be185d\}/);
+    assert.match(css,/\.progressChart \.progressLegend\{[\s\S]*?flex-wrap:wrap;/);
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     ["toggleRQTOverlay","toggleRCTOverlay","toggleNQTOverlay","toggleNCTOverlay"].forEach(id => assert.match(html,new RegExp('id="'+id+'"')));
 });
@@ -147,7 +148,15 @@ test("standards packs validate and remain outside swim history",() => {
     assert.equal(core.standardTimeForSelection(pack,profile,event,"2026-12-31").time,"00:38.0");
 });
 
-test("built-in Welsh NCTs match long course only and allow unavailable age cells",() => {
+test("official course conversion maps 50.0 SC to 50.4 LC and 52.0 LC to 51.6 SC",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    assert.equal(core.convertEquivalentCourseTime(50000,"Freestyle",50,25,50),50400);
+    assert.equal(core.convertEquivalentCourseTime(52000,"Freestyle",50,50,25),51600);
+    assert.equal(core.convertEquivalentCourseTime(50000,"Freestyle",50,25,25),50000);
+});
+
+test("built-in Welsh NCTs convert to short course and allow unavailable age cells",() => {
     const core=loadCore();
     vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
     vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
@@ -157,7 +166,12 @@ test("built-in Welsh NCTs match long course only and allow unavailable age cells
     assert.equal(core.validateStandardsPack(pack).standardType,"NCT");
     const profile={dateOfBirth:"2013-06-15",category:"male"};
     assert.equal(core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"50m"},"2026-12-31").time,"00:31.7");
-    assert.equal(core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"25m"},"2026-12-31"),null);
+    const converted=core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"25m"},"2026-12-31");
+    assert.equal(converted.time,"00:31.00");
+    assert.equal(converted.converted,true);
+    assert.equal(converted.publishedTime,"00:31.7");
+    assert.equal(converted.sourceCourseMetres,50);
+    assert.equal(converted.displayCourseMetres,25);
     assert.equal(core.standardTimeForSelection(pack,{dateOfBirth:"2014-06-15",category:"male"},{stroke:"Freestyle",distance:"1500m",course:"50m"},"2026-12-31"),null);
 });
 
