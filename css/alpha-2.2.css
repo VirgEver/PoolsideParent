@@ -308,16 +308,68 @@
   line-height:1.3;
 }
 .settingsMessage:empty{display:none}
-.standardsList{margin-top:12px}
+.standardsList{margin:4px 0 12px}
 .standardsItem{
+  display:block;
+  padding:12px 0;
+  border-top:1px solid #e1e5e9;
+}
+.standardsItem:first-child{padding-top:2px;border-top:0}
+.standardsItemHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+.standardsItemHeader strong{color:#333;font-size:15px}
+.standardsBadges{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:4px;
+}
+.standardsBadge{
+  display:inline-block;
+  padding:4px 6px;
+  border-radius:6px;
+  font-size:10px;
+  font-weight:800;
+  line-height:1;
+}
+.standardsBadgeIncluded{background:#e7f4ea;color:#256b38}
+.standardsBadgeCurrent{background:#e3f0ff;color:#0b67c2}
+.standardsBadgeAdded{background:#f1e9ff;color:#6d28d9}
+.standardsBadgeImported{background:#eceff2;color:#4b5563}
+.standardsCompetition{
+  margin-top:4px;
+  color:#333;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.3;
+}
+.standardsProvenance{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:3px 10px;
+  margin-top:8px;
+  color:#59636e;
+  font-size:12.5px;
+  line-height:1.35;
+}
+.standardsProvenance span{min-width:0}
+.standardsItemFooter{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:9px 0;
-  border-top:1px solid #e1e5e9;
+  margin-top:9px;
 }
-.standardsItem span{display:block;margin-top:2px;color:#59636e;font-size:13px}
+.standardsSourceLink{
+  color:#0b67c2;
+  font-size:12px;
+  font-weight:800;
+}
+.standardsSourceMissing{color:#777;font-size:12px}
 .removeStandardsButton{
   flex:0 0 auto;
   min-height:34px;
@@ -326,15 +378,45 @@
   color:#fff;
   font-size:12px;
 }
-.includedStandardsLabel{
-  flex:0 0 auto;
-  margin:0!important;
-  padding:5px 7px;
-  border-radius:7px;
-  background:#e7f4ea;
-  color:#256b38!important;
-  font-size:11px!important;
+.standardsUpdateList{margin-top:10px}
+.standardsUpdatesHeading{
+  margin-bottom:5px;
+  color:#6d28d9;
+  font-size:12px;
   font-weight:800;
+}
+.standardsUpdateItem{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 0;
+  border-top:1px solid #e1e5e9;
+}
+.standardsUpdateItem strong,
+.standardsUpdateItem span{display:block}
+.standardsUpdateItem strong{color:#333;font-size:13px}
+.standardsUpdateItem span{margin-top:2px;color:#59636e;font-size:12px}
+.installStandardsButton{
+  flex:0 0 auto;
+  min-height:36px;
+  padding:0 10px;
+  background:#6d28d9;
+  color:#fff;
+  font-size:12px;
+}
+.settingsTextButton{
+  display:block;
+  width:auto!important;
+  min-height:34px!important;
+  margin:7px auto 0!important;
+  padding:5px 8px!important;
+  border:0!important;
+  background:transparent!important;
+  color:#4b5563!important;
+  font-size:12px!important;
+  font-weight:700;
+  text-decoration:underline;
 }
 #settingsScreen #closeSettingsButton{width:16ch;margin:18px auto}
 
