@@ -95,6 +95,12 @@ test("the grey settings control sits directly below Manual Time",() => {
     assert.match(css,/#settingsButton\{grid-column:1;background:#6b7280/);
 });
 
+test("settings profile fields share fixed dimensions without date overflow",() => {
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/\.settingsCard>select,\.settingsCard>input\{[\s\S]*?min-width:0;[\s\S]*?height:42px;[\s\S]*?max-height:42px;/);
+    assert.match(css,/#settingsDateOfBirth\{[\s\S]*?min-inline-size:0;[\s\S]*?max-inline-size:100%;/);
+});
+
 test("chart overlay controls sit below the chart for one-handed use",() => {
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     assert.ok(html.indexOf('id="progressChart"')<html.indexOf('id="toggleOverlayPanel"'));
