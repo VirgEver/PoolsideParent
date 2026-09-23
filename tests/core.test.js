@@ -228,12 +228,13 @@ test("a newer catalogue revision supersedes its included pack without deleting i
 test("settings offers provenance, online updates and a manual import fallback",() => {
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     assert.match(html,/id="standardsList"[\s\S]*id="checkStandardsUpdatesButton"[\s\S]*id="standardsUpdateList"[\s\S]*id="importStandardsButton"/);
+    assert.match(html,/id="importStandardsButton" class="secondaryButton settingsActionButton"/);
     const source=fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8");
     assert.match(source,/Publisher:<\/b>/);
     assert.match(source,/SOURCE ·/);
     assert.match(source,/standards\/catalog\.json/);
     const worker=fs.readFileSync(path.resolve(__dirname,"../service-worker.js"),"utf8");
-    assert.match(worker,/poolside-parent-pwa-v51/);
+    assert.match(worker,/poolside-parent-pwa-v52/);
     assert.match(worker,/\/standards\/catalog\.json[\s\S]*cache:"no-store"/);
 });
 
