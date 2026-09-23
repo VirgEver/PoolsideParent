@@ -326,6 +326,16 @@
   color:#fff;
   font-size:12px;
 }
+.includedStandardsLabel{
+  flex:0 0 auto;
+  margin:0!important;
+  padding:5px 7px;
+  border-radius:7px;
+  background:#e7f4ea;
+  color:#256b38!important;
+  font-size:11px!important;
+  font-weight:800;
+}
 #settingsScreen #closeSettingsButton{width:16ch;margin:18px auto}
 
 #progressScreen .progressOverlayButton{
@@ -364,11 +374,26 @@
   border-color:#1976d2!important;
   color:#fff!important;
 }
+.progressOverlayPanel .historyFilterOption:disabled{
+  border-color:#d7dce1!important;
+  background:#f5f6f7!important;
+  color:#a0a6ad!important;
+  opacity:1;
+}
 .progressRQTLine{stroke:#7c3aed;stroke-dasharray:12 6}
+.progressRCTLine{stroke:#0f766e;stroke-dasharray:3 5}
+.progressNQTLine{stroke:#b91c1c;stroke-dasharray:12 6}
+.progressNCTLine{stroke:#be185d;stroke-dasharray:3 5}
 .progressLegendRQT::before{border-color:#7c3aed}
+.progressLegendRCT::before{border-color:#0f766e}
+.progressLegendNQT::before{border-color:#b91c1c}
+.progressLegendNCT::before{border-color:#be185d}
 .progressLegendPB{color:#d97706}
 .progressLegendSB{color:#2e7d32}
 .progressLegendRQT{color:#7c3aed}
+.progressLegendRCT{color:#0f766e}
+.progressLegendNQT{color:#b91c1c}
+.progressLegendNCT{color:#be185d}
 
 /* Alpha 2.3 editable result details */
 #resultScreen .resultEditPanel{
