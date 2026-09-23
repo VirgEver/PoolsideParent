@@ -176,6 +176,48 @@ test("built-in Welsh NCTs convert to short course and allow unavailable age cell
     assert.equal(core.standardTimeForSelection(pack,{dateOfBirth:"2014-06-15",category:"male"},{stroke:"Freestyle",distance:"1500m",course:"50m"},"2026-12-31"),null);
 });
 
+test("included standards expose auditable source and revision details",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack=core.getStandardsPacks().find(item=>item.id==="swim-wales-national-championships-2026-nct-lc");
+    assert.equal(pack.publisher,"Swim Wales");
+    assert.equal(pack.publishedDate,"2026-01-22");
+    assert.equal(pack.revision,1);
+    assert.match(pack.sourceUrl,/^https:\/\//);
+    const catalogue=JSON.parse(fs.readFileSync(path.resolve(__dirname,"../standards/catalog.json"),"utf8"));
+    assert.equal(catalogue.schemaVersion,1);
+    assert.equal(catalogue.packs[0].id,pack.id);
+    assert.equal(catalogue.packs[0].revision,pack.revision);
+});
+
+test("a newer catalogue revision supersedes its included pack without deleting it",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const included=core.getStandardsPacks()[0];
+    const update=JSON.parse(JSON.stringify(included));
+    update.revision=2;
+    update.sourceTitle="Corrected meet pack";
+    core.saveStandardsPack(update,"catalogue");
+    const active=core.getStandardsPacks().find(item=>item.id===included.id);
+    assert.equal(active.revision,2);
+    assert.equal(active.installationSource,"catalogue");
+    assert.equal(active.builtIn,false);
+});
+
+test("settings offers provenance, online updates and a manual import fallback",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    assert.match(html,/id="standardsList"[\s\S]*id="checkStandardsUpdatesButton"[\s\S]*id="standardsUpdateList"[\s\S]*id="importStandardsButton"/);
+    const source=fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8");
+    assert.match(source,/Publisher:<\/b>/);
+    assert.match(source,/SOURCE ·/);
+    assert.match(source,/standards\/catalog\.json/);
+    const worker=fs.readFileSync(path.resolve(__dirname,"../service-worker.js"),"utf8");
+    assert.match(worker,/poolside-parent-pwa-v50/);
+    assert.match(worker,/\/standards\/catalog\.json[\s\S]*cache:"no-store"/);
+});
+
 test("a missing historical standards season uses the latest pack at that season's age",() => {
     const core=loadCore();
     vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
