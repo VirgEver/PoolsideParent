@@ -123,6 +123,11 @@ test("chart overlays mirror the compact filter layout and legend colours",() => 
     assert.match(css,/\.progressLegendPB\{color:#d97706\}/);
     assert.match(css,/\.progressLegendSB\{color:#2e7d32\}/);
     assert.match(css,/\.progressLegendRQT\{color:#7c3aed\}/);
+    assert.match(css,/\.progressLegendRCT\{color:#0f766e\}/);
+    assert.match(css,/\.progressLegendNQT\{color:#b91c1c\}/);
+    assert.match(css,/\.progressLegendNCT\{color:#be185d\}/);
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    ["toggleRQTOverlay","toggleRCTOverlay","toggleNQTOverlay","toggleNCTOverlay"].forEach(id => assert.match(html,new RegExp('id="'+id+'"')));
 });
 
 test("standards packs validate and remain outside swim history",() => {
@@ -140,6 +145,20 @@ test("standards packs validate and remain outside swim history",() => {
     const event={stroke:"Freestyle",distance:"50m",course:"25m"};
     assert.equal(core.standardTimeForSelection(pack,profile,event,"2025-12-31").time,"00:40.0");
     assert.equal(core.standardTimeForSelection(pack,profile,event,"2026-12-31").time,"00:38.0");
+});
+
+test("built-in Welsh NCTs match long course only and allow unavailable age cells",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack=core.getStandardsPacks().find(item=>item.id==="swim-wales-national-championships-2026-nct-lc");
+    assert.ok(pack);
+    assert.equal(pack.builtIn,true);
+    assert.equal(core.validateStandardsPack(pack).standardType,"NCT");
+    const profile={dateOfBirth:"2013-06-15",category:"male"};
+    assert.equal(core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"50m"},"2026-12-31").time,"00:31.7");
+    assert.equal(core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"25m"},"2026-12-31"),null);
+    assert.equal(core.standardTimeForSelection(pack,{dateOfBirth:"2014-06-15",category:"male"},{stroke:"Freestyle",distance:"1500m",course:"50m"},"2026-12-31"),null);
 });
 
 test("Phase 3 preview and history exports use the Alpha 2.3.0 label",() => {
