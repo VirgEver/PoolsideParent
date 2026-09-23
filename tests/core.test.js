@@ -126,6 +126,7 @@ test("chart overlays mirror the compact filter layout and legend colours",() => 
     assert.match(css,/\.progressLegendRCT\{color:#0f766e\}/);
     assert.match(css,/\.progressLegendNQT\{color:#b91c1c\}/);
     assert.match(css,/\.progressLegendNCT\{color:#be185d\}/);
+    assert.match(css,/\.progressStandardPoint\{fill:#fff;stroke-width:3;stroke-dasharray:none\}/);
     assert.match(css,/\.progressChart \.progressLegend\{[\s\S]*?flex-wrap:wrap;/);
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     ["toggleRQTOverlay","toggleRCTOverlay","toggleNQTOverlay","toggleNCTOverlay"].forEach(id => assert.match(html,new RegExp('id="'+id+'"')));
@@ -173,6 +174,23 @@ test("built-in Welsh NCTs convert to short course and allow unavailable age cell
     assert.equal(converted.sourceCourseMetres,50);
     assert.equal(converted.displayCourseMetres,25);
     assert.equal(core.standardTimeForSelection(pack,{dateOfBirth:"2014-06-15",category:"male"},{stroke:"Freestyle",distance:"1500m",course:"50m"},"2026-12-31"),null);
+});
+
+test("a missing historical standards season uses the latest pack at that season's age",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    core.getSwimmerByName=()=>({dateOfBirth:"2013-06-15",category:"male"});
+    const overlay=core.buildStandardsOverlay([{seasonId:"2025"}],{swimmer:"Alfie",stroke:"Freestyle",distance:"50m",course:"50m"},"NCT");
+    assert.equal(overlay.details[0].pack.year,2026);
+    assert.equal(overlay.details[0].ageGroup,"12");
+    assert.equal(overlay.details[0].time,"00:33.8");
+    assert.match(overlay.message,/latest installed table adjusted/);
+});
+
+test("one-race charts draw a standards stub and marker",() => {
+    const source=fs.readFileSync(path.resolve(__dirname,"../js/progress-chart.js"),"utf8");
+    assert.match(source,/points\.length===1[\s\S]*?x\(0\)-22[\s\S]*?progressStandardPoint/);
 });
 
 test("Phase 3 preview and history exports use the Alpha 2.3.0 label",() => {
