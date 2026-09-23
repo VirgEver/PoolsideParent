@@ -394,6 +394,11 @@
 .progressLegendRCT{color:#0f766e}
 .progressLegendNQT{color:#b91c1c}
 .progressLegendNCT{color:#be185d}
+.progressChart .progressLegend{
+  flex-wrap:wrap;
+  gap:7px 14px;
+  line-height:1.25;
+}
 
 /* Alpha 2.3 editable result details */
 #resultScreen .resultEditPanel{
