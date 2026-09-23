@@ -243,14 +243,16 @@ function buildStandardsOverlay(points,selected,standardType){
             else{badges.push("<span class='standardsBadge standardsBadgeImported'>IMPORTED</span>");}
             if(currentCatalogueIds.has(pack.id)){badges.push("<span class='standardsBadge standardsBadgeCurrent'>CURRENT</span>");}
             const safeURL=sourceURL(pack.sourceUrl);
+            const sourceText="SOURCE · "+String(pack.sourceTitle || pack.sourceDocument || "Published document")+(pack.sourceReference ? " · "+pack.sourceReference : "");
             const source=safeURL
-                ? "<a class='standardsSourceLink' href='"+escapeHTML(safeURL)+"' target='_blank' rel='noopener noreferrer'>SOURCE · "+escapeHTML(pack.sourceTitle || "View published document")+"</a>"
-                : "<span class='standardsSourceMissing'>Source details not supplied</span>";
+                ? "<a class='standardsSourceLink' href='"+escapeHTML(safeURL)+"' target='_blank' rel='noopener noreferrer'>"+escapeHTML(sourceText)+"</a>"
+                : (pack.sourceTitle || pack.sourceDocument ? "<span class='standardsSourceReference'>"+escapeHTML(sourceText)+"</span>" : "<span class='standardsSourceMissing'>Source details not supplied</span>");
             const action=pack.builtIn ? "" : "<button type='button' class='removeStandardsButton' data-standard-id='"+escapeHTML(pack.id)+"' aria-label='Remove "+escapeHTML(pack.id)+"'>REMOVE</button>";
             return "<div class='standardsItem'>"
                 +"<div class='standardsItemHeader'><strong>"+escapeHTML(String(pack.standardType).toUpperCase()+" · "+pack.year+" · "+pack.poolLengthMetres+"m")+"</strong><div class='standardsBadges'>"+badges.join("")+"</div></div>"
                 +"<div class='standardsCompetition'>"+escapeHTML(pack.competition || pack.region || "Standards pack")+"</div>"
                 +"<div class='standardsProvenance'><span><b>Publisher:</b> "+escapeHTML(pack.publisher || "Not supplied")+"</span><span><b>Published:</b> "+escapeHTML(displayDate(pack.publishedDate))+"</span><span><b>Age at:</b> "+escapeHTML(displayDate(pack.ageAsOf))+"</span><span><b>Revision:</b> "+escapeHTML(pack.revision || 1)+"</span></div>"
+                +(pack.sourceNote ? "<div class='standardsSourceNote'>"+escapeHTML(pack.sourceNote)+"</div>" : "")
                 +"<div class='standardsItemFooter'>"+source+action+"</div></div>";
         }).join("");
         standardsList.querySelectorAll(".removeStandardsButton").forEach(function(button){
