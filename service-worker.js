@@ -1,4 +1,4 @@
-const CACHE_NAME = "poolside-parent-pwa-v49";
+const CACHE_NAME = "poolside-parent-pwa-v50";
 
 const APP_FILES = [
   "./index.html",
@@ -77,6 +77,21 @@ self.addEventListener("fetch", function(event){
         .catch(function(){
           return caches.match("./index.html");
         })
+    );
+    return;
+  }
+
+  if(new URL(event.request.url).pathname.endsWith("/standards/catalog.json")){
+    event.respondWith(
+      fetch(new Request(event.request, {cache:"no-store"}))
+        .then(function(response){
+          if(response && response.ok){
+            const copy=response.clone();
+            caches.open(CACHE_NAME).then(function(cache){cache.put(event.request,copy);});
+          }
+          return response;
+        })
+        .catch(function(){return caches.match(event.request);})
     );
     return;
   }
