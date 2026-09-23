@@ -151,26 +151,38 @@ function buildStandardsOverlay(points,selected,standardType){
     });
     if(!packs.length){return {values:points.map(function(){return null;}),details:points.map(function(){return null;}),message:"Import an "+standardType+" standards pack in Settings first."};}
     packs.sort(function(a,b){return a.year-b.year;});
-    let usedCurrentFallback=false;
+    let usedLatestPack=false;
+    let usedCurrentStandard=false;
     const latestYear=Math.max.apply(null,packs.map(function(pack){return pack.year;}));
+    const latestPacks=packs.filter(function(item){return item.year===latestYear;});
     const details=points.map(function(point){
         const year=Number(point.seasonId);
         let candidatePacks=packs.filter(function(item){return item.year===year;});
         if(!candidatePacks.length && Number.isFinite(year)){
-            candidatePacks=packs.filter(function(item){return item.year===latestYear;});
-            usedCurrentFallback=true;
+            candidatePacks=latestPacks;
+            usedLatestPack=true;
         }
         const selectedCourse=parseMetres(selected.course);
         const pack=candidatePacks.find(function(item){return item.poolLengthMetres===selectedCourse;}) || candidatePacks[0];
         if(!pack){return null;}
         const ageReferenceDate=String(year)+String(pack.ageAsOf).slice(4);
-        return standardTimeForSelection(pack,profile,selected,ageReferenceDate);
+        let standard=standardTimeForSelection(pack,profile,selected,ageReferenceDate);
+        if(!standard && Number.isFinite(year) && year<latestYear){
+            const currentPack=latestPacks.find(function(item){return item.poolLengthMetres===selectedCourse;}) || latestPacks[0];
+            standard=currentPack ? standardTimeForSelection(currentPack,profile,selected,currentPack.ageAsOf) : null;
+            if(standard){
+                standard={...standard,currentStandardFallback:true};
+                usedCurrentStandard=true;
+            }
+        }
+        return standard;
     });
     const values=details.map(function(standard){return standard ? standard.milliseconds : null;});
     const hasValue=values.some(Number.isFinite);
     const usedConversion=details.some(function(standard){return standard && standard.converted;});
     const messages=[];
-    if(usedCurrentFallback){messages.push("Seasons without their own "+standardType+" pack use the latest installed table adjusted for the swimmer's age.");}
+    if(usedLatestPack){messages.push("Seasons without their own "+standardType+" pack use the latest installed table adjusted for the swimmer's age.");}
+    if(usedCurrentStandard){messages.push("Where an earlier age has no "+standardType+" value, the current standard is shown for context.");}
     if(usedConversion){
         const example=details.find(function(standard){return standard && standard.converted;});
         messages.push(standardType+" uses official "+example.sourceCourseMetres+"→"+example.displayCourseMetres+"m equivalent times on this chart.");
