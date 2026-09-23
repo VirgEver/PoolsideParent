@@ -369,6 +369,19 @@
   font-size:12px;
   font-weight:800;
 }
+.standardsSourceReference{
+  color:#4b5563;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.35;
+}
+.standardsSourceNote{
+  margin-top:7px;
+  color:#6b7280;
+  font-size:11.5px;
+  font-style:italic;
+  line-height:1.35;
+}
 .standardsSourceMissing{color:#777;font-size:12px}
 .removeStandardsButton{
   flex:0 0 auto;
