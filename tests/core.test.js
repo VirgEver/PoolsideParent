@@ -106,6 +106,12 @@ test("settings profile fields share fixed dimensions without date overflow",() =
     assert.match(css,/#standardsFileInput\[hidden\]\{[\s\S]*?display:none!important;/);
 });
 
+test("editable result details use standard fields in a narrower panel",() => {
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/#resultScreen \.resultEditPanel\{[\s\S]*?width:calc\(100% - 28px\);[\s\S]*?margin:12px auto 18px;[\s\S]*?background:#fff;/);
+    assert.match(css,/#resultScreen \.resultEditRow select\{[\s\S]*?min-width:0;[\s\S]*?height:42px;[\s\S]*?background:#f2f2f2;/);
+});
+
 test("chart overlay controls sit below the chart for one-handed use",() => {
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     assert.ok(html.indexOf('id="progressChart"')<html.indexOf('id="toggleOverlayPanel"'));
