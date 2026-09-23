@@ -3,7 +3,7 @@
 function exportHistory(){
     const exportPackage={
         app:"Poolside Parent",
-        version:"Alpha 2.2.0",
+        version:"Alpha 2.3.0",
         storageVersion:CURRENT_STORAGE_VERSION,
         exportedAt:new Date().toISOString(),
         swims:getSwims()

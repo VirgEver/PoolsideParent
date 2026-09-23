@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-23",
+  "packs": [
+    {
+      "id": "swim-wales-national-championships-2026-nct-lc",
+      "standardType": "NCT",
+      "revision": 1,
+      "year": 2026,
+      "poolLengthMetres": 50,
+      "competition": "Swim Wales National Championships",
+      "publisher": "Swim Wales",
+      "publishedDate": "2026-01-22",
+      "sourceTitle": "Swim Wales National Championships 2026 Meet Pack",
+      "sourceUrl": "https://static1.squarespace.com/static/57ad76fa37c58174719a4135/t/6991c2215ad61e59d9c9691e/1771160099832/28ed6630-3913-457c-910e-401d2fa79c7f.pdf"
+    },
+    {
+      "id": "north-wales-rqt-2026-sc",
+      "standardType": "RQT",
+      "revision": 1,
+      "year": 2026,
+      "poolLengthMetres": 25,
+      "competition": "Swim Wales Regional Short Course Championships",
+      "publisher": "Swim Wales North Region",
+      "publishedDate": "Not recorded",
+      "sourceTitle": "Regional Short Course Championships 2026 Meet Pack",
+      "sourceDocument": "23919-20260509-185529-MeetPackRegionalShortCourseChampionships20262.pdf",
+      "sourceReference": "Qualification Standards — page 11",
+      "dataUrl": "packs/north-wales-rqt-2026-sc.json"
+    }
+  ]
+}

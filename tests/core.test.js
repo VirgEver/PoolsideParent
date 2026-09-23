@@ -26,7 +26,7 @@ function loadCore(includeUI=false){
     };
     vm.createContext(context);
     const root=path.resolve(__dirname,"..");
-    ["js/config.js","js/utils.js","js/storage.js"].concat(includeUI ? ["js/ui.js"] : []).forEach(file => {
+    ["js/config.js","js/utils.js","js/storage.js","js/performance.js"].concat(includeUI ? ["js/ui.js"] : []).forEach(file => {
         vm.runInContext(fs.readFileSync(path.join(root,file),"utf8"),context,{filename:file});
     });
     return context;
@@ -44,6 +44,35 @@ test("swimming event choices have one configuration source",() => {
     assert.deepEqual(Array.from(core.POOLSIDE_CONFIG.strokes),["Freestyle","Backstroke","Breaststroke","Butterfly","IM"]);
     assert.deepEqual(Array.from(core.POOLSIDE_CONFIG.courses),["25m","50m"]);
     assert.equal(core.getResultSourceLabel("official"),"Official Gala");
+    assert.deepEqual({...core.POOLSIDE_CONFIG.season},{type:"calendar-year",startMonth:1,startDay:1});
+});
+
+test("calendar-year seasons reset on 1 January",() => {
+    const core=loadCore();
+    assert.equal(core.getSeasonDescriptor(new Date(2025,11,31).getTime()).label,"2025");
+    assert.equal(core.getSeasonDescriptor(new Date(2026,0,1).getTime()).label,"2026");
+});
+
+test("a later custom season profile can cross calendar years",() => {
+    const core=loadCore();
+    const rule={startMonth:9,startDay:1};
+    assert.equal(core.getSeasonDescriptor(new Date(2026,7,31).getTime(),rule).label,"2025/26");
+    assert.equal(core.getSeasonDescriptor(new Date(2026,8,1).getTime(),rule).label,"2026/27");
+});
+
+test("PB continues across years while SB resets for each calendar year",() => {
+    const core=loadCore();
+    const series=core.buildPerformanceSeries([
+        {date:"10/12/2025",time:"10:00",finalTime:"01:10.00"},
+        {date:"20/12/2025",time:"10:00",finalTime:"01:09.00"},
+        {date:"05/01/2026",time:"10:00",finalTime:"01:11.00"},
+        {date:"01/02/2026",time:"10:00",finalTime:"01:08.00"}
+    ]);
+    assert.deepEqual(series.map(point=>point.isPB),[true,true,false,true]);
+    assert.deepEqual(series.map(point=>point.isSB),[true,true,true,true]);
+    assert.deepEqual(series.map(point=>point.seasonLabel),["2025","2025","2026","2026"]);
+    assert.equal(series[2].pbMilliseconds,69000);
+    assert.equal(series[2].sbMilliseconds,71000);
 });
 
 test("index contains no embedded style or script patches",() => {
@@ -55,8 +84,194 @@ test("index contains no embedded style or script patches",() => {
 test("every secondary screen heading contains the real app icon",() => {
     const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
     const headings=Array.from(html.matchAll(/<h2[^>]*class="[^"]*screenTitle[^"]*"[^>]*>(.*?)<\/h2>/g),match => match[1]);
-    assert.equal(headings.length,5);
+    assert.equal(headings.length,6);
     headings.forEach(heading => assert.match(heading,/<img class="screenTitleLogo"[^>]*width="58"[^>]*height="58"/));
+});
+
+test("the grey settings control sits directly below Manual Time",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    assert.match(html,/id="manualButton"[\s\S]*id="historyButton"[\s\S]*id="settingsButton"/);
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/#settingsButton\{grid-column:1;background:#6b7280/);
+});
+
+test("settings profile fields share fixed dimensions without date overflow",() => {
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/\.settingsDateField\{[\s\S]*?width:100%;[\s\S]*?height:42px;[\s\S]*?overflow:hidden;/);
+    assert.match(css,/\.settingsCard>select\{[\s\S]*?background:#f2f2f2;/);
+    assert.match(css,/\.settingsDateField\{[\s\S]*?background:#f2f2f2;/);
+    assert.match(css,/\.settingsDateField #settingsDateOfBirth\{[\s\S]*?min-width:0;[\s\S]*?max-width:100%;[\s\S]*?-webkit-appearance:none;/);
+    assert.match(css,/::-webkit-date-and-time-value\{[\s\S]*?color:#222;[\s\S]*?text-align:left;[\s\S]*?line-height:40px;/);
+    assert.match(css,/::-webkit-datetime-edit\{[\s\S]*?align-items:center;[\s\S]*?height:40px;/);
+    assert.match(css,/#standardsFileInput\[hidden\]\{[\s\S]*?display:none!important;/);
+});
+
+test("editable result details use standard fields in a narrower panel",() => {
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/#resultScreen \.resultEditPanel\{[\s\S]*?width:calc\(100% - 28px\);[\s\S]*?margin:12px auto 18px;[\s\S]*?background:#fff;/);
+    assert.match(css,/#resultScreen \.resultEditRow select\{[\s\S]*?min-width:0;[\s\S]*?height:42px;[\s\S]*?background:#f2f2f2;/);
+});
+
+test("chart overlay controls sit below the chart for one-handed use",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    assert.ok(html.indexOf('id="progressChart"')<html.indexOf('id="toggleOverlayPanel"'));
+});
+
+test("chart overlays mirror the compact filter layout and legend colours",() => {
+    const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
+    assert.match(css,/\.progressOverlayPanel \.historyFilterSection\{[\s\S]*?display:flex;[\s\S]*?border-bottom:1px solid #ddd;/);
+    assert.match(css,/\.progressLegendPB\{color:#d97706\}/);
+    assert.match(css,/\.progressLegendSB\{color:#2e7d32\}/);
+    assert.match(css,/\.progressLegendRQT\{color:#7c3aed\}/);
+    assert.match(css,/\.progressLegendRCT\{color:#0f766e\}/);
+    assert.match(css,/\.progressLegendNQT\{color:#b91c1c\}/);
+    assert.match(css,/\.progressLegendNCT\{color:#be185d\}/);
+    assert.match(css,/\.progressStandardPoint\{fill:#fff;stroke-width:3;stroke-dasharray:none\}/);
+    assert.match(css,/\.progressChart \.progressLegend\{[\s\S]*?flex-wrap:wrap;/);
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    ["toggleRQTOverlay","toggleRCTOverlay","toggleNQTOverlay","toggleNCTOverlay"].forEach(id => assert.match(html,new RegExp('id="'+id+'"')));
+});
+
+test("standards packs validate and remain outside swim history",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack={
+        schemaVersion:1,id:"north-test",standardType:"RQT",competition:"Test",region:"North Wales",
+        year:2026,poolLengthMetres:25,ageAsOf:"2026-12-31",ageGroups:["12","13","17+"],
+        events:[{stroke:"freestyle",distanceMetres:50,male:["00:40.0","00:38.0","00:30.0"],female:["00:41.0","00:39.0","00:31.0"]}]
+    };
+    assert.equal(core.saveStandardsPack(pack).replaced,false);
+    assert.equal(core.getStandardsPacks().length,1);
+    assert.equal(core.getSwims().length,0);
+    const profile={dateOfBirth:"2013-06-15",category:"male"};
+    const event={stroke:"Freestyle",distance:"50m",course:"25m"};
+    assert.equal(core.standardTimeForSelection(pack,profile,event,"2025-12-31").time,"00:40.0");
+    assert.equal(core.standardTimeForSelection(pack,profile,event,"2026-12-31").time,"00:38.0");
+});
+
+test("official course conversion maps 50.0 SC to 50.4 LC and 52.0 LC to 51.6 SC",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    assert.equal(core.convertEquivalentCourseTime(50000,"Freestyle",50,25,50),50400);
+    assert.equal(core.convertEquivalentCourseTime(52000,"Freestyle",50,50,25),51600);
+    assert.equal(core.convertEquivalentCourseTime(50000,"Freestyle",50,25,25),50000);
+});
+
+test("built-in Welsh NCTs convert to short course and allow unavailable age cells",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack=core.getStandardsPacks().find(item=>item.id==="swim-wales-national-championships-2026-nct-lc");
+    assert.ok(pack);
+    assert.equal(pack.builtIn,true);
+    assert.equal(core.validateStandardsPack(pack).standardType,"NCT");
+    const profile={dateOfBirth:"2013-06-15",category:"male"};
+    assert.equal(core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"50m"},"2026-12-31").time,"00:31.7");
+    const converted=core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"25m"},"2026-12-31");
+    assert.equal(converted.time,"00:31.00");
+    assert.equal(converted.converted,true);
+    assert.equal(converted.publishedTime,"00:31.7");
+    assert.equal(converted.sourceCourseMetres,50);
+    assert.equal(converted.displayCourseMetres,25);
+    assert.equal(core.standardTimeForSelection(pack,{dateOfBirth:"2014-06-15",category:"male"},{stroke:"Freestyle",distance:"1500m",course:"50m"},"2026-12-31"),null);
+});
+
+test("included standards expose auditable source and revision details",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack=core.getStandardsPacks().find(item=>item.id==="swim-wales-national-championships-2026-nct-lc");
+    assert.equal(pack.publisher,"Swim Wales");
+    assert.equal(pack.publishedDate,"2026-01-22");
+    assert.equal(pack.revision,1);
+    assert.match(pack.sourceUrl,/^https:\/\//);
+    const catalogue=JSON.parse(fs.readFileSync(path.resolve(__dirname,"../standards/catalog.json"),"utf8"));
+    assert.equal(catalogue.schemaVersion,1);
+    assert.equal(catalogue.packs[0].id,pack.id);
+    assert.equal(catalogue.packs[0].revision,pack.revision);
+});
+
+test("North Wales 2026 RQTs are included with their meet-pack provenance",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-rqt.js"),"utf8"),core,{filename:"js/built-in-rqt.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack=core.getStandardsPacks().find(item=>item.id==="north-wales-rqt-2026-sc");
+    assert.ok(pack);
+    assert.equal(pack.builtIn,true);
+    assert.equal(pack.publisher,"Swim Wales North Region");
+    assert.equal(pack.sourceReference,"Qualification Standards — page 11");
+    assert.equal(pack.events.length,17);
+    const profile={dateOfBirth:"2014-06-15",category:"male"};
+    assert.equal(core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"25m"},"2026-12-31").time,"00:36.0");
+    const catalogue=JSON.parse(fs.readFileSync(path.resolve(__dirname,"../standards/catalog.json"),"utf8"));
+    const listed=catalogue.packs.find(item=>item.id===pack.id);
+    assert.equal(listed.revision,pack.revision);
+    assert.equal(listed.dataUrl,"packs/north-wales-rqt-2026-sc.json");
+});
+
+test("a newer catalogue revision supersedes its included pack without deleting it",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const included=core.getStandardsPacks()[0];
+    const update=JSON.parse(JSON.stringify(included));
+    update.revision=2;
+    update.sourceTitle="Corrected meet pack";
+    core.saveStandardsPack(update,"catalogue");
+    const active=core.getStandardsPacks().find(item=>item.id===included.id);
+    assert.equal(active.revision,2);
+    assert.equal(active.installationSource,"catalogue");
+    assert.equal(active.builtIn,false);
+});
+
+test("settings offers provenance, online updates and a manual import fallback",() => {
+    const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+    assert.match(html,/id="standardsList"[\s\S]*id="checkStandardsUpdatesButton"[\s\S]*id="standardsUpdateList"[\s\S]*id="importStandardsButton"/);
+    assert.match(html,/id="importStandardsButton" class="secondaryButton settingsActionButton"/);
+    const source=fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8");
+    assert.match(source,/Publisher:<\/b>/);
+    assert.match(source,/SOURCE ·/);
+    assert.match(source,/standards\/catalog\.json/);
+    const worker=fs.readFileSync(path.resolve(__dirname,"../service-worker.js"),"utf8");
+    assert.match(worker,/poolside-parent-pwa-v52/);
+    assert.match(worker,/\/standards\/catalog\.json[\s\S]*cache:"no-store"/);
+});
+
+test("a missing historical standards season uses the latest pack at that season's age",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    core.getSwimmerByName=()=>({dateOfBirth:"2013-06-15",category:"male"});
+    const overlay=core.buildStandardsOverlay([{seasonId:"2025"}],{swimmer:"Alfie",stroke:"Freestyle",distance:"50m",course:"50m"},"NCT");
+    assert.equal(overlay.details[0].pack.year,2026);
+    assert.equal(overlay.details[0].ageGroup,"12");
+    assert.equal(overlay.details[0].time,"00:33.8");
+    assert.match(overlay.message,/latest installed table adjusted/);
+});
+
+test("an earlier season below the minimum age carries back the current converted standard",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    core.getSwimmerByName=()=>({dateOfBirth:"2014-06-15",category:"male"});
+    const overlay=core.buildStandardsOverlay([{seasonId:"2025"}],{swimmer:"Alfie",stroke:"Freestyle",distance:"50m",course:"25m"},"NCT");
+    assert.equal(overlay.details[0].ageGroup,"12");
+    assert.equal(overlay.details[0].time,"00:33.20");
+    assert.equal(overlay.details[0].converted,true);
+    assert.equal(overlay.details[0].currentStandardFallback,true);
+    assert.match(overlay.message,/current standard is shown for context/);
+});
+
+test("one-race charts draw a standards stub and marker",() => {
+    const source=fs.readFileSync(path.resolve(__dirname,"../js/progress-chart.js"),"utf8");
+    assert.match(source,/points\.length===1[\s\S]*?x\(0\)-22[\s\S]*?progressStandardPoint/);
+});
+
+test("Phase 3 preview and history exports use the Alpha 2.3.0 label",() => {
+    const root=path.resolve(__dirname,"..");
+    assert.match(fs.readFileSync(path.join(root,"index.html"),"utf8"),/Alpha 2\.3\.0 Test/);
+    assert.match(fs.readFileSync(path.join(root,"js\/export.js"),"utf8"),/version:"Alpha 2\.3\.0"/);
 });
 
 test("timestamp timing remains accurate after a long browser pause",() => {
