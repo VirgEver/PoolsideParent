@@ -418,19 +418,6 @@
   color:#fff;
   font-size:12px;
 }
-.settingsTextButton{
-  display:block;
-  width:auto!important;
-  min-height:34px!important;
-  margin:7px auto 0!important;
-  padding:5px 8px!important;
-  border:0!important;
-  background:transparent!important;
-  color:#4b5563!important;
-  font-size:12px!important;
-  font-weight:700;
-  text-decoration:underline;
-}
 #settingsScreen #closeSettingsButton{width:16ch;margin:18px auto}
 
 #progressScreen .progressOverlayButton{
