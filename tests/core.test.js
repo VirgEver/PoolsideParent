@@ -98,6 +98,8 @@ test("the grey settings control sits directly below Manual Time",() => {
 test("settings profile fields share fixed dimensions without date overflow",() => {
     const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
     assert.match(css,/\.settingsDateField\{[\s\S]*?width:100%;[\s\S]*?height:42px;[\s\S]*?overflow:hidden;/);
+    assert.match(css,/\.settingsCard>select\{[\s\S]*?background:#f2f2f2;/);
+    assert.match(css,/\.settingsDateField\{[\s\S]*?background:#f2f2f2;/);
     assert.match(css,/\.settingsDateField #settingsDateOfBirth\{[\s\S]*?min-width:0;[\s\S]*?max-width:100%;[\s\S]*?-webkit-appearance:none;/);
     assert.match(css,/::-webkit-date-and-time-value\{[\s\S]*?color:#222;[\s\S]*?text-align:left;[\s\S]*?line-height:40px;/);
     assert.match(css,/::-webkit-datetime-edit\{[\s\S]*?align-items:center;[\s\S]*?height:40px;/);
