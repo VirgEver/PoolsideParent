@@ -1,7 +1,7 @@
 /* Qualifying standards are deliberately stored outside swim history. */
 const STANDARDS_STORAGE_KEY="poolsideParentStandards";
 
-function getStandardsPacks(){
+function getImportedStandardsPacks(){
     try{
         const value=JSON.parse(localStorage.getItem(STANDARDS_STORAGE_KEY) || "[]");
         return Array.isArray(value) ? value : [];
@@ -11,11 +11,23 @@ function getStandardsPacks(){
     }
 }
 
+function getStandardsPacks(){
+    const builtIns=typeof POOLSIDE_BUILT_IN_STANDARDS === "undefined" ? [] : POOLSIDE_BUILT_IN_STANDARDS.map(function(pack){
+        return {...pack,builtIn:true};
+    });
+    const builtInIds=new Set(builtIns.map(function(pack){return pack.id;}));
+    const imported=getImportedStandardsPacks().filter(function(pack){return !builtInIds.has(pack.id);});
+    return builtIns.concat(imported).sort(function(a,b){
+        return (a.year-b.year) || String(a.standardType).localeCompare(String(b.standardType));
+    });
+}
+
 function validateStandardsPack(pack){
     if(!pack || typeof pack !== "object" || Array.isArray(pack)){throw new Error("This is not a standards pack");}
     if(pack.schemaVersion !== 1){throw new Error("Unsupported standards file version");}
     if(!String(pack.id || "").trim()){throw new Error("Standards pack ID is missing");}
-    if(!String(pack.standardType || "").trim()){throw new Error("Standard type is missing");}
+    const standardType=String(pack.standardType || "").trim().toUpperCase();
+    if(!["RQT","RCT","NQT","NCT"].includes(standardType)){throw new Error("Standard type must be RQT, RCT, NQT or NCT");}
     if(!Number.isInteger(pack.year)){throw new Error("Competition year is invalid");}
     if(pack.poolLengthMetres !== 25 && pack.poolLengthMetres !== 50){throw new Error("Pool length must be 25m or 50m");}
     if(!/^\d{4}-\d{2}-\d{2}$/.test(String(pack.ageAsOf || ""))){throw new Error("Age reference date is invalid");}
@@ -33,6 +45,7 @@ function validateStandardsPack(pack){
                 throw new Error("Incorrect "+category+" age values for "+key);
             }
             event[category].forEach(function(time){
+                if(time===null || String(time).trim()===""){return;}
                 if(!Number.isFinite(parseElapsedMilliseconds(time))){throw new Error("Invalid qualifying time: "+time);}
             });
         });
@@ -42,7 +55,7 @@ function validateStandardsPack(pack){
 
 function saveStandardsPack(rawPack){
     const pack=validateStandardsPack(rawPack);
-    const packs=getStandardsPacks();
+    const packs=getImportedStandardsPacks();
     const index=packs.findIndex(function(item){return item.id===pack.id;});
     const stored={...pack,importedAt:new Date().toISOString()};
     if(index>=0){packs[index]=stored;}else{packs.push(stored);}
@@ -52,7 +65,7 @@ function saveStandardsPack(rawPack){
 }
 
 function removeStandardsPack(id){
-    const packs=getStandardsPacks().filter(function(pack){return pack.id!==id;});
+    const packs=getImportedStandardsPacks().filter(function(pack){return pack.id!==id;});
     localStorage.setItem(STANDARDS_STORAGE_KEY,JSON.stringify(packs));
 }
 
@@ -85,6 +98,7 @@ function standardTimeForSelection(pack,profile,selected,ageReferenceDate){
     });
     if(ageIndex<0 || !Array.isArray(event[profile.category])){return null;}
     const time=event[profile.category][ageIndex];
+    if(time===null || String(time).trim()===""){return null;}
     const milliseconds=parseElapsedMilliseconds(time);
     return Number.isFinite(milliseconds) ? {milliseconds:milliseconds,time:time,ageGroup:pack.ageGroups[ageIndex],pack:pack} : null;
 }
@@ -143,7 +157,10 @@ function buildStandardsOverlay(points,selected,standardType){
         const packs=getStandardsPacks();
         if(!packs.length){standardsList.innerHTML="<p class='settingsEmpty'>No standards imported yet.</p>";return;}
         standardsList.innerHTML=packs.map(function(pack){
-            return "<div class='standardsItem'><div><strong>"+escapeHTML(String(pack.standardType).toUpperCase()+" · "+pack.year)+"</strong><span>"+escapeHTML(pack.region || pack.competition || "Standards pack")+" · "+escapeHTML(String(pack.poolLengthMetres)+"m")+"</span></div><button type='button' class='removeStandardsButton' data-standard-id='"+escapeHTML(pack.id)+"' aria-label='Remove "+escapeHTML(pack.id)+"'>REMOVE</button></div>";
+            const action=pack.builtIn
+                ? "<span class='includedStandardsLabel'>INCLUDED</span>"
+                : "<button type='button' class='removeStandardsButton' data-standard-id='"+escapeHTML(pack.id)+"' aria-label='Remove "+escapeHTML(pack.id)+"'>REMOVE</button>";
+            return "<div class='standardsItem'><div><strong>"+escapeHTML(String(pack.standardType).toUpperCase()+" · "+pack.year)+"</strong><span>"+escapeHTML(pack.competition || pack.region || "Standards pack")+" · "+escapeHTML(String(pack.poolLengthMetres)+"m")+"</span></div>"+action+"</div>";
         }).join("");
         standardsList.querySelectorAll(".removeStandardsButton").forEach(function(button){
             button.addEventListener("click",function(){
