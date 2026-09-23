@@ -151,15 +151,14 @@ function buildStandardsOverlay(points,selected,standardType){
     });
     if(!packs.length){return {values:points.map(function(){return null;}),details:points.map(function(){return null;}),message:"Import an "+standardType+" standards pack in Settings first."};}
     packs.sort(function(a,b){return a.year-b.year;});
-    let usedAgeContext=false;
+    let usedCurrentFallback=false;
+    const latestYear=Math.max.apply(null,packs.map(function(pack){return pack.year;}));
     const details=points.map(function(point){
         const year=Number(point.seasonId);
         let candidatePacks=packs.filter(function(item){return item.year===year;});
-        if(!candidatePacks.length && Number.isFinite(year) && year<=packs[packs.length-1].year){
-            const eligibleYears=packs.filter(function(item){return item.year<=year;}).map(function(item){return item.year;});
-            const nearestYear=eligibleYears.length ? Math.max.apply(null,eligibleYears) : packs[0].year;
-            candidatePacks=packs.filter(function(item){return item.year===nearestYear;});
-            usedAgeContext=true;
+        if(!candidatePacks.length && Number.isFinite(year)){
+            candidatePacks=packs.filter(function(item){return item.year===latestYear;});
+            usedCurrentFallback=true;
         }
         const selectedCourse=parseMetres(selected.course);
         const pack=candidatePacks.find(function(item){return item.poolLengthMetres===selectedCourse;}) || candidatePacks[0];
@@ -171,7 +170,7 @@ function buildStandardsOverlay(points,selected,standardType){
     const hasValue=values.some(Number.isFinite);
     const usedConversion=details.some(function(standard){return standard && standard.converted;});
     const messages=[];
-    if(usedAgeContext){messages.push("Earlier seasons use the nearest installed "+standardType+" table adjusted for the swimmer's age.");}
+    if(usedCurrentFallback){messages.push("Seasons without their own "+standardType+" pack use the latest installed table adjusted for the swimmer's age.");}
     if(usedConversion){
         const example=details.find(function(standard){return standard && standard.converted;});
         messages.push(standardType+" uses official "+example.sourceCourseMetres+"→"+example.displayCourseMetres+"m equivalent times on this chart.");
