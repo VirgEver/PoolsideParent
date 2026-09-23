@@ -179,7 +179,14 @@
 
         standardOverlays.forEach(function(item){
             if(overlays[item.key] && standards[item.key].values.some(Number.isFinite)){
-                svg+="<path class='progressOverlayLine "+item.lineClass+"' d='"+buildOptionalStepPath(standards[item.key].values,x,y)+"'></path>";
+                const values=standards[item.key].values;
+                const path=points.length===1
+                    ? "M "+(x(0)-22)+" "+y(values[0])+" H "+(x(0)+22)
+                    : buildOptionalStepPath(values,x,y);
+                svg+="<path class='progressOverlayLine "+item.lineClass+"' d='"+path+"'></path>";
+                if(points.length===1){
+                    svg+="<circle class='progressStandardPoint "+item.lineClass+"' cx='"+x(0)+"' cy='"+y(values[0])+"' r='5'></circle>";
+                }
             }
         });
 
