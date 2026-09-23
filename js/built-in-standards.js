@@ -4,6 +4,7 @@ var POOLSIDE_BUILT_IN_STANDARDS=[
         schemaVersion:1,
         id:"swim-wales-national-championships-2026-nct-lc",
         standardType:"NCT",
+        revision:1,
         level:"national",
         thresholdType:"consideration",
         competition:"Swim Wales National Championships",
@@ -12,6 +13,8 @@ var POOLSIDE_BUILT_IN_STANDARDS=[
         poolLengthMetres:50,
         ageAsOf:"2026-12-31",
         ageGroups:["12","13","14","15","16","17","18+"],
+        publisher:"Swim Wales",
+        publishedDate:"2026-01-22",
         sourceTitle:"Swim Wales National Championships 2026 Meet Pack",
         sourceUrl:"https://static1.squarespace.com/static/57ad76fa37c58174719a4135/t/6991c2215ad61e59d9c9691e/1771160099832/28ed6630-3913-457c-910e-401d2fa79c7f.pdf",
         events:[
