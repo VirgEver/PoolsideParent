@@ -1,4 +1,4 @@
-const CACHE_NAME = "poolside-parent-pwa-v42";
+const CACHE_NAME = "poolside-parent-pwa-v43";
 
 const APP_FILES = [
   "./index.html",
