@@ -26,6 +26,7 @@
     ];
     let currentSwims=[];
     let currentSelection=null;
+    let currentStandards={};
 
     function shortDate(value){
         const text=String(value || "").trim();
@@ -65,10 +66,11 @@
             const available=values[item.key].values.some(Number.isFinite);
             if(item.button){
                 item.button.disabled=!available;
-                item.button.title=available ? "" : "No matching "+item.type+" for this event and pool length";
+                item.button.title=available ? "" : "No matching "+item.type+" for this event";
             }
             if(!available){overlays[item.key]=false;}
         });
+        currentStandards=values;
         return values;
     }
 
@@ -84,19 +86,34 @@
         return path;
     }
 
-    function pointDetailText(point){
+    function pointDetailText(point,index){
         const badges=[];
         if(point.isPB){ badges.push("PB"); }
         if(point.isSB){ badges.push("SB "+point.seasonLabel); }
         const source=getResultSourceLabel(point.swim.source || "poolside");
-        return [point.swim.date || "Date unavailable",point.swim.finalTime || "",source].concat(badges).filter(Boolean).join(" • ");
+        const details=[point.swim.date || "Date unavailable",point.swim.finalTime || "",source].concat(badges);
+        let equivalentAdded=false;
+        standardOverlays.forEach(function(item){
+            if(!overlays[item.key] || !currentStandards[item.key]){return;}
+            const standard=currentStandards[item.key].details[index];
+            if(!standard){return;}
+            if(standard.converted && !equivalentAdded){
+                const equivalent=convertEquivalentCourseTime(point.milliseconds,currentSelection.stroke,parseMetres(currentSelection.distance),standard.displayCourseMetres,standard.sourceCourseMetres);
+                if(Number.isFinite(equivalent)){
+                    details.push(standard.sourceCourseMetres+"m equivalent "+formatElapsedMilliseconds(equivalent));
+                    equivalentAdded=true;
+                }
+            }
+            details.push(item.type+" "+formatElapsedMilliseconds(standard.milliseconds)+(standard.converted ? " (from "+formatElapsedMilliseconds(standard.publishedMilliseconds)+" "+standard.sourceCourseMetres+"m)" : " (published "+standard.sourceCourseMetres+"m)"));
+        });
+        return details.filter(Boolean).join(" • ");
     }
 
     function selectPoint(index,points){
         progressChart.querySelectorAll(".progressPoint").forEach(function(circle){
             circle.classList.toggle("selected",Number(circle.dataset.pointIndex)===index);
         });
-        if(pointDetails && points[index]){ pointDetails.textContent=pointDetailText(points[index]); }
+        if(pointDetails && points[index]){ pointDetails.textContent=pointDetailText(points[index],index); }
     }
 
     function attachPointInteractions(points){
@@ -182,7 +199,9 @@
         if(overlays.sb){ legends.push("<span class='progressLegendSB'>SB progression</span>"); }
         standardOverlays.forEach(function(item){
             if(overlays[item.key] && standards[item.key].values.some(Number.isFinite)){
-                legends.push("<span class='"+item.legendClass+"'>"+item.label+"</span>");
+                const converted=standards[item.key].details.find(function(detail){return detail && detail.converted;});
+                const suffix=converted ? " · converted "+converted.sourceCourseMetres+"→"+converted.displayCourseMetres+"m" : " · published";
+                legends.push("<span class='"+item.legendClass+"'>"+item.label+suffix+"</span>");
             }
         });
         if(legends.length){ svg+="<div class='progressLegend'>"+legends.join("")+"</div>"; }
