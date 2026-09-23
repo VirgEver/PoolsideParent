@@ -97,8 +97,9 @@ test("the grey settings control sits directly below Manual Time",() => {
 
 test("settings profile fields share fixed dimensions without date overflow",() => {
     const css=fs.readFileSync(path.resolve(__dirname,"../css/alpha-2.2.css"),"utf8");
-    assert.match(css,/\.settingsCard>select,\.settingsCard>input\{[\s\S]*?min-width:0;[\s\S]*?height:42px;[\s\S]*?max-height:42px;/);
-    assert.match(css,/#settingsDateOfBirth\{[\s\S]*?min-inline-size:0;[\s\S]*?max-inline-size:100%;/);
+    assert.match(css,/\.settingsDateField\{[\s\S]*?width:100%;[\s\S]*?height:42px;[\s\S]*?overflow:hidden;/);
+    assert.match(css,/\.settingsDateField #settingsDateOfBirth\{[\s\S]*?min-width:0;[\s\S]*?max-width:100%;[\s\S]*?-webkit-appearance:none;/);
+    assert.match(css,/#standardsFileInput\[hidden\]\{[\s\S]*?display:none!important;/);
 });
 
 test("chart overlay controls sit below the chart for one-handed use",() => {
