@@ -191,6 +191,25 @@ test("included standards expose auditable source and revision details",() => {
     assert.equal(catalogue.packs[0].revision,pack.revision);
 });
 
+test("North Wales 2026 RQTs are included with their meet-pack provenance",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-rqt.js"),"utf8"),core,{filename:"js/built-in-rqt.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    const pack=core.getStandardsPacks().find(item=>item.id==="north-wales-rqt-2026-sc");
+    assert.ok(pack);
+    assert.equal(pack.builtIn,true);
+    assert.equal(pack.publisher,"Swim Wales North Region");
+    assert.equal(pack.sourceReference,"Qualification Standards — page 11");
+    assert.equal(pack.events.length,17);
+    const profile={dateOfBirth:"2014-06-15",category:"male"};
+    assert.equal(core.standardTimeForSelection(pack,profile,{stroke:"Freestyle",distance:"50m",course:"25m"},"2026-12-31").time,"00:36.0");
+    const catalogue=JSON.parse(fs.readFileSync(path.resolve(__dirname,"../standards/catalog.json"),"utf8"));
+    const listed=catalogue.packs.find(item=>item.id===pack.id);
+    assert.equal(listed.revision,pack.revision);
+    assert.equal(listed.dataUrl,"packs/north-wales-rqt-2026-sc.json");
+});
+
 test("a newer catalogue revision supersedes its included pack without deleting it",() => {
     const core=loadCore();
     vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
@@ -214,7 +233,7 @@ test("settings offers provenance, online updates and a manual import fallback",(
     assert.match(source,/SOURCE ·/);
     assert.match(source,/standards\/catalog\.json/);
     const worker=fs.readFileSync(path.resolve(__dirname,"../service-worker.js"),"utf8");
-    assert.match(worker,/poolside-parent-pwa-v50/);
+    assert.match(worker,/poolside-parent-pwa-v51/);
     assert.match(worker,/\/standards\/catalog\.json[\s\S]*cache:"no-store"/);
 });
 
