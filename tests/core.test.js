@@ -188,6 +188,19 @@ test("a missing historical standards season uses the latest pack at that season'
     assert.match(overlay.message,/latest installed table adjusted/);
 });
 
+test("an earlier season below the minimum age carries back the current converted standard",() => {
+    const core=loadCore();
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/built-in-standards.js"),"utf8"),core,{filename:"js/built-in-standards.js"});
+    vm.runInContext(fs.readFileSync(path.resolve(__dirname,"../js/standards.js"),"utf8"),core,{filename:"js/standards.js"});
+    core.getSwimmerByName=()=>({dateOfBirth:"2014-06-15",category:"male"});
+    const overlay=core.buildStandardsOverlay([{seasonId:"2025"}],{swimmer:"Alfie",stroke:"Freestyle",distance:"50m",course:"25m"},"NCT");
+    assert.equal(overlay.details[0].ageGroup,"12");
+    assert.equal(overlay.details[0].time,"00:33.20");
+    assert.equal(overlay.details[0].converted,true);
+    assert.equal(overlay.details[0].currentStandardFallback,true);
+    assert.match(overlay.message,/current standard is shown for context/);
+});
+
 test("one-race charts draw a standards stub and marker",() => {
     const source=fs.readFileSync(path.resolve(__dirname,"../js/progress-chart.js"),"utf8");
     assert.match(source,/points\.length===1[\s\S]*?x\(0\)-22[\s\S]*?progressStandardPoint/);
