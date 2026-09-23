@@ -384,6 +384,7 @@
 .progressRCTLine{stroke:#0f766e;stroke-dasharray:3 5}
 .progressNQTLine{stroke:#b91c1c;stroke-dasharray:12 6}
 .progressNCTLine{stroke:#be185d;stroke-dasharray:3 5}
+.progressStandardPoint{fill:#fff;stroke-width:3;stroke-dasharray:none}
 .progressLegendRQT::before{border-color:#7c3aed}
 .progressLegendRCT::before{border-color:#0f766e}
 .progressLegendNQT::before{border-color:#b91c1c}
