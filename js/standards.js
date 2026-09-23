@@ -1,5 +1,12 @@
 /* Qualifying standards are deliberately stored outside swim history. */
 const STANDARDS_STORAGE_KEY="poolsideParentStandards";
+const STANDARD_TURN_FACTORS=Object.freeze({
+    "freestyle|50":42.245,"freestyle|100":42.245,"freestyle|200":43.786,"freestyle|400":44.233,"freestyle|800":45.525,"freestyle|1500":46.221,
+    "breaststroke|50":63.616,"breaststroke|100":63.616,"breaststroke|200":66.598,
+    "butterfly|50":38.269,"butterfly|100":38.269,"butterfly|200":39.76,
+    "backstroke|50":40.5,"backstroke|100":40.5,"backstroke|200":41.98,
+    "individual_medley|200":49.7,"individual_medley|400":55.366
+});
 
 function getImportedStandardsPacks(){
     try{
@@ -74,6 +81,22 @@ function standardStrokeKey(value){
     return key==="im" ? "individual_medley" : key;
 }
 
+/* Swim England / SPORTSYSTEMS equivalent-time algorithm, rounded to a tenth. */
+function convertEquivalentCourseTime(milliseconds,stroke,distanceMetres,fromCourseMetres,toCourseMetres){
+    const fromCourse=Number(fromCourseMetres),toCourse=Number(toCourseMetres),distance=Number(distanceMetres);
+    const seconds=Number(milliseconds)/1000;
+    if(!Number.isFinite(seconds) || seconds<=0){return null;}
+    if(fromCourse===toCourse){return Math.round(seconds*1000);}
+    if(!((fromCourse===25 && toCourse===50) || (fromCourse===50 && toCourse===25))){return null;}
+    const turnFactor=STANDARD_TURN_FACTORS[standardStrokeKey(stroke)+"|"+distance];
+    if(!Number.isFinite(turnFactor)){return null;}
+    const distanceFactor=Math.pow(distance/100,2)*2;
+    const convertedSeconds=fromCourse===25
+        ? (seconds+Math.sqrt(Math.pow(seconds,2)+(4*turnFactor*distanceFactor)))/2
+        : seconds-((turnFactor/seconds)*distanceFactor);
+    return Math.round(convertedSeconds*10)*100;
+}
+
 function ageOnDate(dateOfBirth,referenceDate){
     const birthParts=String(dateOfBirth || "").split("-").map(Number);
     const referenceParts=String(referenceDate || "").split("-").map(Number);
@@ -85,7 +108,7 @@ function ageOnDate(dateOfBirth,referenceDate){
 
 function standardTimeForSelection(pack,profile,selected,ageReferenceDate){
     if(!pack || !profile || !selected){return null;}
-    if(pack.poolLengthMetres!==parseMetres(selected.course)){return null;}
+    const selectedCourse=parseMetres(selected.course);
     const event=pack.events.find(function(item){
         return standardStrokeKey(item.stroke)===standardStrokeKey(selected.stroke) && Number(item.distanceMetres)===parseMetres(selected.distance);
     });
@@ -99,39 +122,64 @@ function standardTimeForSelection(pack,profile,selected,ageReferenceDate){
     if(ageIndex<0 || !Array.isArray(event[profile.category])){return null;}
     const time=event[profile.category][ageIndex];
     if(time===null || String(time).trim()===""){return null;}
-    const milliseconds=parseElapsedMilliseconds(time);
-    return Number.isFinite(milliseconds) ? {milliseconds:milliseconds,time:time,ageGroup:pack.ageGroups[ageIndex],pack:pack} : null;
+    const publishedMilliseconds=parseElapsedMilliseconds(time);
+    if(!Number.isFinite(publishedMilliseconds)){return null;}
+    const converted=pack.poolLengthMetres!==selectedCourse;
+    const milliseconds=converted
+        ? convertEquivalentCourseTime(publishedMilliseconds,event.stroke,event.distanceMetres,pack.poolLengthMetres,selectedCourse)
+        : publishedMilliseconds;
+    return Number.isFinite(milliseconds) ? {
+        milliseconds:milliseconds,
+        time:converted ? formatElapsedMilliseconds(milliseconds) : time,
+        ageGroup:pack.ageGroups[ageIndex],
+        pack:pack,
+        converted:converted,
+        sourceCourseMetres:pack.poolLengthMetres,
+        displayCourseMetres:selectedCourse,
+        publishedMilliseconds:publishedMilliseconds,
+        publishedTime:time
+    } : null;
 }
 
 function buildStandardsOverlay(points,selected,standardType){
     const profile=typeof getSwimmerByName === "function" ? getSwimmerByName(selected.swimmer) : null;
     if(!profile || !profile.dateOfBirth || !profile.category){
-        return {values:points.map(function(){return null;}),message:"Add this swimmer's date of birth and competition category in Settings."};
+        return {values:points.map(function(){return null;}),details:points.map(function(){return null;}),message:"Add this swimmer's date of birth and competition category in Settings."};
     }
     const packs=getStandardsPacks().filter(function(pack){
         return String(pack.standardType).toUpperCase()===String(standardType).toUpperCase();
     });
-    if(!packs.length){return {values:points.map(function(){return null;}),message:"Import an "+standardType+" standards pack in Settings first."};}
+    if(!packs.length){return {values:points.map(function(){return null;}),details:points.map(function(){return null;}),message:"Import an "+standardType+" standards pack in Settings first."};}
     packs.sort(function(a,b){return a.year-b.year;});
     let usedAgeContext=false;
-    const values=points.map(function(point){
+    const details=points.map(function(point){
         const year=Number(point.seasonId);
-        let pack=packs.find(function(item){return item.year===year;});
-        if(!pack && Number.isFinite(year) && year<=packs[packs.length-1].year){
-            pack=packs.filter(function(item){return item.year<=year;}).pop() || packs[0];
+        let candidatePacks=packs.filter(function(item){return item.year===year;});
+        if(!candidatePacks.length && Number.isFinite(year) && year<=packs[packs.length-1].year){
+            const eligibleYears=packs.filter(function(item){return item.year<=year;}).map(function(item){return item.year;});
+            const nearestYear=eligibleYears.length ? Math.max.apply(null,eligibleYears) : packs[0].year;
+            candidatePacks=packs.filter(function(item){return item.year===nearestYear;});
             usedAgeContext=true;
         }
+        const selectedCourse=parseMetres(selected.course);
+        const pack=candidatePacks.find(function(item){return item.poolLengthMetres===selectedCourse;}) || candidatePacks[0];
         if(!pack){return null;}
         const ageReferenceDate=String(year)+String(pack.ageAsOf).slice(4);
-        const standard=standardTimeForSelection(pack,profile,selected,ageReferenceDate);
-        return standard ? standard.milliseconds : null;
+        return standardTimeForSelection(pack,profile,selected,ageReferenceDate);
     });
+    const values=details.map(function(standard){return standard ? standard.milliseconds : null;});
     const hasValue=values.some(Number.isFinite);
+    const usedConversion=details.some(function(standard){return standard && standard.converted;});
+    const messages=[];
+    if(usedAgeContext){messages.push("Earlier seasons use the nearest installed "+standardType+" table adjusted for the swimmer's age.");}
+    if(usedConversion){
+        const example=details.find(function(standard){return standard && standard.converted;});
+        messages.push(standardType+" uses official "+example.sourceCourseMetres+"→"+example.displayCourseMetres+"m equivalent times on this chart.");
+    }
     return {
         values:values,
-        message:hasValue
-            ? (usedAgeContext ? "Earlier seasons use the nearest installed "+standardType+" table adjusted for the swimmer's age." : "")
-            : "No matching "+standardType+" standard is installed for this event, course and season."
+        details:details,
+        message:hasValue ? messages.join(" ") : "No matching "+standardType+" standard is installed for this event and season."
     };
 }
 
