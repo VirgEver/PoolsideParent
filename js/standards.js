@@ -22,9 +22,14 @@ function getStandardsPacks(){
     const builtIns=typeof POOLSIDE_BUILT_IN_STANDARDS === "undefined" ? [] : POOLSIDE_BUILT_IN_STANDARDS.map(function(pack){
         return {...pack,builtIn:true};
     });
-    const builtInIds=new Set(builtIns.map(function(pack){return pack.id;}));
-    const imported=getImportedStandardsPacks().filter(function(pack){return !builtInIds.has(pack.id);});
-    return builtIns.concat(imported).sort(function(a,b){
+    const packsById=new Map(builtIns.map(function(pack){return [pack.id,pack];}));
+    getImportedStandardsPacks().forEach(function(pack){
+        const included=packsById.get(pack.id);
+        const importedRevision=Number(pack.revision || 1);
+        const includedRevision=Number(included && included.revision || 1);
+        if(!included || importedRevision>includedRevision){packsById.set(pack.id,{...pack,builtIn:false});}
+    });
+    return Array.from(packsById.values()).sort(function(a,b){
         return (a.year-b.year) || String(a.standardType).localeCompare(String(b.standardType));
     });
 }
@@ -60,11 +65,11 @@ function validateStandardsPack(pack){
     return pack;
 }
 
-function saveStandardsPack(rawPack){
+function saveStandardsPack(rawPack,installationSource){
     const pack=validateStandardsPack(rawPack);
     const packs=getImportedStandardsPacks();
     const index=packs.findIndex(function(item){return item.id===pack.id;});
-    const stored={...pack,importedAt:new Date().toISOString()};
+    const stored={...pack,builtIn:false,installationSource:installationSource || "manual",importedAt:new Date().toISOString()};
     if(index>=0){packs[index]=stored;}else{packs.push(stored);}
     packs.sort(function(a,b){return (a.year-b.year) || String(a.standardType).localeCompare(String(b.standardType));});
     localStorage.setItem(STANDARDS_STORAGE_KEY,JSON.stringify(packs));
@@ -204,6 +209,22 @@ function buildStandardsOverlay(points,selected,standardType){
     const fileInput=document.getElementById("standardsFileInput");
     const standardsMessage=document.getElementById("standardsMessage");
     const standardsList=document.getElementById("standardsList");
+    const checkUpdatesButton=document.getElementById("checkStandardsUpdatesButton");
+    const standardsUpdateList=document.getElementById("standardsUpdateList");
+    let currentCatalogueIds=new Set();
+    let pendingCatalogueEntries=[];
+
+    function sourceURL(value){
+        try{
+            const parsed=new URL(String(value || ""));
+            return parsed.protocol==="https:" ? parsed.href : "";
+        }catch(error){return "";}
+    }
+
+    function displayDate(value){
+        const parts=String(value || "").split("-");
+        return parts.length===3 ? parts[2]+"/"+parts[1]+"/"+parts[0] : String(value || "Not supplied");
+    }
 
     function showSelectedProfile(){
         const swimmer=getSwimmers().find(function(item){return item.id===swimmerSelect.value;});
@@ -216,10 +237,21 @@ function buildStandardsOverlay(points,selected,standardType){
         const packs=getStandardsPacks();
         if(!packs.length){standardsList.innerHTML="<p class='settingsEmpty'>No standards imported yet.</p>";return;}
         standardsList.innerHTML=packs.map(function(pack){
-            const action=pack.builtIn
-                ? "<span class='includedStandardsLabel'>INCLUDED</span>"
-                : "<button type='button' class='removeStandardsButton' data-standard-id='"+escapeHTML(pack.id)+"' aria-label='Remove "+escapeHTML(pack.id)+"'>REMOVE</button>";
-            return "<div class='standardsItem'><div><strong>"+escapeHTML(String(pack.standardType).toUpperCase()+" · "+pack.year)+"</strong><span>"+escapeHTML(pack.competition || pack.region || "Standards pack")+" · "+escapeHTML(String(pack.poolLengthMetres)+"m")+"</span></div>"+action+"</div>";
+            const badges=[];
+            if(pack.builtIn){badges.push("<span class='standardsBadge standardsBadgeIncluded'>INCLUDED</span>");}
+            else if(pack.installationSource==="catalogue"){badges.push("<span class='standardsBadge standardsBadgeAdded'>ADDED</span>");}
+            else{badges.push("<span class='standardsBadge standardsBadgeImported'>IMPORTED</span>");}
+            if(currentCatalogueIds.has(pack.id)){badges.push("<span class='standardsBadge standardsBadgeCurrent'>CURRENT</span>");}
+            const safeURL=sourceURL(pack.sourceUrl);
+            const source=safeURL
+                ? "<a class='standardsSourceLink' href='"+escapeHTML(safeURL)+"' target='_blank' rel='noopener noreferrer'>SOURCE · "+escapeHTML(pack.sourceTitle || "View published document")+"</a>"
+                : "<span class='standardsSourceMissing'>Source details not supplied</span>";
+            const action=pack.builtIn ? "" : "<button type='button' class='removeStandardsButton' data-standard-id='"+escapeHTML(pack.id)+"' aria-label='Remove "+escapeHTML(pack.id)+"'>REMOVE</button>";
+            return "<div class='standardsItem'>"
+                +"<div class='standardsItemHeader'><strong>"+escapeHTML(String(pack.standardType).toUpperCase()+" · "+pack.year+" · "+pack.poolLengthMetres+"m")+"</strong><div class='standardsBadges'>"+badges.join("")+"</div></div>"
+                +"<div class='standardsCompetition'>"+escapeHTML(pack.competition || pack.region || "Standards pack")+"</div>"
+                +"<div class='standardsProvenance'><span><b>Publisher:</b> "+escapeHTML(pack.publisher || "Not supplied")+"</span><span><b>Published:</b> "+escapeHTML(displayDate(pack.publishedDate))+"</span><span><b>Age at:</b> "+escapeHTML(displayDate(pack.ageAsOf))+"</span><span><b>Revision:</b> "+escapeHTML(pack.revision || 1)+"</span></div>"
+                +"<div class='standardsItemFooter'>"+source+action+"</div></div>";
         }).join("");
         standardsList.querySelectorAll(".removeStandardsButton").forEach(function(button){
             button.addEventListener("click",function(){
@@ -228,6 +260,64 @@ function buildStandardsOverlay(points,selected,standardType){
                 renderStandardsList();
             });
         });
+    }
+
+    function renderCatalogueUpdates(entries){
+        pendingCatalogueEntries=entries;
+        if(!standardsUpdateList){return;}
+        if(!entries.length){standardsUpdateList.innerHTML="";return;}
+        standardsUpdateList.innerHTML="<div class='standardsUpdatesHeading'>NEW STANDARDS AVAILABLE</div>"+entries.map(function(entry,index){
+            const installed=getStandardsPacks().find(function(pack){return pack.id===entry.id;});
+            const action=installed ? "UPDATE" : "ADD STANDARDS";
+            return "<div class='standardsUpdateItem'><div><strong>"+escapeHTML(String(entry.standardType).toUpperCase()+" · "+entry.year+" · "+entry.poolLengthMetres+"m")+"</strong><span>"+escapeHTML(entry.competition || entry.publisher || "Standards pack")+"</span></div><button type='button' class='installStandardsButton' data-catalogue-index='"+index+"'>"+action+"</button></div>";
+        }).join("");
+        standardsUpdateList.querySelectorAll(".installStandardsButton").forEach(function(button){
+            button.addEventListener("click",async function(){
+                const entry=pendingCatalogueEntries[Number(button.dataset.catalogueIndex)];
+                if(!entry || !entry.dataUrl){standardsMessage.textContent="This standards file is not available yet.";return;}
+                button.disabled=true;
+                try{
+                    const catalogueURL=new URL("standards/catalog.json",document.baseURI);
+                    const response=await fetch(new URL(entry.dataUrl,catalogueURL),{cache:"no-store"});
+                    if(!response.ok){throw new Error("Download failed ("+response.status+")");}
+                    const result=saveStandardsPack(await response.json(),"catalogue");
+                    standardsMessage.textContent=(result.replaced ? "Updated " : "Added ")+String(result.pack.standardType).toUpperCase()+" standards for "+result.pack.year+".";
+                    await checkCatalogue(false);
+                }catch(error){
+                    console.error("Standards update failed:",error);
+                    standardsMessage.textContent="Unable to add standards: "+error.message;
+                    button.disabled=false;
+                }
+            });
+        });
+    }
+
+    async function checkCatalogue(showSuccess){
+        if(checkUpdatesButton){checkUpdatesButton.disabled=true;checkUpdatesButton.textContent="CHECKING…";}
+        try{
+            const response=await fetch(new URL("standards/catalog.json",document.baseURI),{cache:"no-store"});
+            if(!response.ok){throw new Error("Catalogue unavailable ("+response.status+")");}
+            const catalogue=await response.json();
+            if(catalogue.schemaVersion!==1 || !Array.isArray(catalogue.packs)){throw new Error("Catalogue format is not supported");}
+            const installed=getStandardsPacks();
+            const installedById=new Map(installed.map(function(pack){return [pack.id,pack];}));
+            currentCatalogueIds=new Set(catalogue.packs.filter(function(entry){
+                const pack=installedById.get(entry.id);
+                return pack && Number(pack.revision || 1)>=Number(entry.revision || 1);
+            }).map(function(entry){return entry.id;}));
+            const available=catalogue.packs.filter(function(entry){
+                const pack=installedById.get(entry.id);
+                return !pack || Number(entry.revision || 1)>Number(pack.revision || 1);
+            });
+            renderStandardsList();
+            renderCatalogueUpdates(available);
+            if(showSuccess){standardsMessage.textContent=available.length ? available.length+" new standards pack"+(available.length===1 ? " is" : "s are")+" available." : "Included standards are up to date.";}
+        }catch(error){
+            console.error("Standards catalogue check failed:",error);
+            standardsMessage.textContent="Unable to check right now. Your installed standards still work offline.";
+        }finally{
+            if(checkUpdatesButton){checkUpdatesButton.disabled=false;checkUpdatesButton.textContent="CHECK FOR NEW STANDARDS";}
+        }
     }
 
     const prepareScreen=function(){
@@ -249,6 +339,7 @@ function buildStandardsOverlay(points,selected,standardType){
         });
     }
     if(importButton && fileInput){importButton.addEventListener("click",function(){fileInput.click();});}
+    if(checkUpdatesButton){checkUpdatesButton.addEventListener("click",function(){checkCatalogue(true);});}
     if(fileInput){
         fileInput.addEventListener("change",function(event){
             const file=event.target.files[0];
@@ -256,7 +347,7 @@ function buildStandardsOverlay(points,selected,standardType){
             const reader=new FileReader();
             reader.onload=function(){
                 try{
-                    const result=saveStandardsPack(JSON.parse(reader.result));
+                    const result=saveStandardsPack(JSON.parse(reader.result),"manual");
                     standardsMessage.textContent=(result.replaced ? "Updated " : "Imported ")+String(result.pack.standardType).toUpperCase()+" standards for "+result.pack.year+".";
                     renderStandardsList();
                 }catch(error){
