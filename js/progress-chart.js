@@ -7,6 +7,9 @@
     const pbButton=document.getElementById("togglePBOverlay");
     const sbButton=document.getElementById("toggleSBOverlay");
     const rqtButton=document.getElementById("toggleRQTOverlay");
+    const rctButton=document.getElementById("toggleRCTOverlay");
+    const nqtButton=document.getElementById("toggleNQTOverlay");
+    const nctButton=document.getElementById("toggleNCTOverlay");
     const overlayButton=document.getElementById("toggleOverlayPanel");
     const overlayPanel=document.getElementById("progressOverlayPanel");
     const overlayStatus=document.getElementById("progressOverlayStatus");
@@ -14,7 +17,13 @@
     const clearOverlaysButton=document.getElementById("clearProgressOverlays");
     const closeOverlaysButton=document.getElementById("closeProgressOverlays");
     const closeButton=document.getElementById("closeProgressButton");
-    const overlays={pb:false,sb:false,rqt:false};
+    const overlays={pb:false,sb:false,rqt:false,rct:false,nqt:false,nct:false};
+    const standardOverlays=[
+        {key:"rqt",type:"RQT",button:rqtButton,lineClass:"progressRQTLine",legendClass:"progressLegendRQT",label:"RQT"},
+        {key:"rct",type:"RCT",button:rctButton,lineClass:"progressRCTLine",legendClass:"progressLegendRCT",label:"RCT"},
+        {key:"nqt",type:"NQT",button:nqtButton,lineClass:"progressNQTLine",legendClass:"progressLegendNQT",label:"NQT"},
+        {key:"nct",type:"NCT",button:nctButton,lineClass:"progressNCTLine",legendClass:"progressLegendNCT",label:"NCT"}
+    ];
     let currentSwims=[];
     let currentSelection=null;
 
@@ -32,7 +41,9 @@
     }
 
     function syncOverlayButtons(){
-        [[pbButton,overlays.pb],[sbButton,overlays.sb],[rqtButton,overlays.rqt]].forEach(function(entry){
+        [[pbButton,overlays.pb],[sbButton,overlays.sb]].concat(standardOverlays.map(function(item){
+            return [item.button,overlays[item.key]];
+        })).forEach(function(entry){
             if(!entry[0]){ return; }
             entry[0].classList.toggle("selected",entry[1]);
             entry[0].setAttribute("aria-pressed",entry[1] ? "true" : "false");
@@ -43,6 +54,22 @@
             overlayStatus.textContent=enabled.join(" • ");
             overlayStatus.classList.toggle("hidden",enabled.length===0);
         }
+    }
+
+    function standardsForChart(points){
+        const values={};
+        standardOverlays.forEach(function(item){
+            values[item.key]=typeof buildStandardsOverlay === "function"
+                ? buildStandardsOverlay(points,currentSelection,item.type)
+                : {values:[],message:""};
+            const available=values[item.key].values.some(Number.isFinite);
+            if(item.button){
+                item.button.disabled=!available;
+                item.button.title=available ? "" : "No matching "+item.type+" for this event and pool length";
+            }
+            if(!available){overlays[item.key]=false;}
+        });
+        return values;
     }
 
     function buildOptionalStepPath(values,x,y){
@@ -95,9 +122,12 @@
 
         const width=640,height=380,left=100,right=50,top=42,bottom=72;
         const plotWidth=width-left-right,plotHeight=height-top-bottom;
-        const rqt=typeof buildStandardsOverlay === "function" ? buildStandardsOverlay(points,currentSelection,"RQT") : {values:[],message:""};
+        const standards=standardsForChart(points);
+        syncOverlayButtons();
         const scaleValues=points.map(function(point){return point.milliseconds;});
-        if(overlays.rqt){rqt.values.filter(Number.isFinite).forEach(function(value){scaleValues.push(value);});}
+        standardOverlays.forEach(function(item){
+            if(overlays[item.key]){standards[item.key].values.filter(Number.isFinite).forEach(function(value){scaleValues.push(value);});}
+        });
         let min=Math.min.apply(null,scaleValues);
         let max=Math.max.apply(null,scaleValues);
         const padding=Math.max((max-min)*0.12,500);
@@ -130,9 +160,11 @@
             svg+="<path class='progressOverlayLine progressPBLine' d='"+buildStepPath(points,"pbMilliseconds",x,y)+"'></path>";
         }
 
-        if(overlays.rqt && rqt.values.some(Number.isFinite)){
-            svg+="<path class='progressOverlayLine progressRQTLine' d='"+buildOptionalStepPath(rqt.values,x,y)+"'></path>";
-        }
+        standardOverlays.forEach(function(item){
+            if(overlays[item.key] && standards[item.key].values.some(Number.isFinite)){
+                svg+="<path class='progressOverlayLine "+item.lineClass+"' d='"+buildOptionalStepPath(standards[item.key].values,x,y)+"'></path>";
+            }
+        });
 
         svg+="<polyline class='progressLine' points='"+performanceLine+"'></polyline>";
         const labelEvery=Math.max(1,Math.ceil(points.length/6));
@@ -148,13 +180,20 @@
         const legends=[];
         if(overlays.pb){ legends.push("<span class='progressLegendPB'>PB progression</span>"); }
         if(overlays.sb){ legends.push("<span class='progressLegendSB'>SB progression</span>"); }
-        if(overlays.rqt && rqt.values.some(Number.isFinite)){ legends.push("<span class='progressLegendRQT'>RQT</span>"); }
+        standardOverlays.forEach(function(item){
+            if(overlays[item.key] && standards[item.key].values.some(Number.isFinite)){
+                legends.push("<span class='"+item.legendClass+"'>"+item.label+"</span>");
+            }
+        });
         if(legends.length){ svg+="<div class='progressLegend'>"+legends.join("")+"</div>"; }
         svg+="<div class='progressDirection'>Oldest → newest · Faster times move down</div>";
         progressChart.innerHTML=svg;
         attachPointInteractions(points);
         if(pointDetails){ pointDetails.textContent="Tap a point for swim details."; }
-        if(overlayMessage){overlayMessage.textContent=overlays.rqt ? rqt.message : "";}
+        if(overlayMessage){
+            overlayMessage.textContent=standardOverlays.filter(function(item){return overlays[item.key];})
+                .map(function(item){return standards[item.key].message;}).filter(Boolean).join(" ");
+        }
     }
 
     function toggleOverlay(name){
@@ -168,7 +207,7 @@
         currentSwims=getSwims().filter(function(swim){return sameEvent(swim,selected);});
         overlays.pb=false;
         overlays.sb=false;
-        overlays.rqt=false;
+        standardOverlays.forEach(function(item){overlays[item.key]=false;});
         syncOverlayButtons();
         if(overlayPanel){overlayPanel.classList.add("hidden");}
         if(overlayButton){overlayButton.setAttribute("aria-expanded","false");}
@@ -181,7 +220,9 @@
 
     if(pbButton){ pbButton.addEventListener("click",function(){toggleOverlay("pb");}); }
     if(sbButton){ sbButton.addEventListener("click",function(){toggleOverlay("sb");}); }
-    if(rqtButton){ rqtButton.addEventListener("click",function(){toggleOverlay("rqt");}); }
+    standardOverlays.forEach(function(item){
+        if(item.button){item.button.addEventListener("click",function(){toggleOverlay(item.key);});}
+    });
     if(overlayButton){
         overlayButton.addEventListener("click",function(){
             const opening=overlayPanel.classList.contains("hidden");
