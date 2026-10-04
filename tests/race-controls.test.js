@@ -32,7 +32,14 @@ test('split and finish capture contact timestamps once with requested feedback',
     const buzzes=[];
     const h=raceHarness({vibrate:p=>buzzes.push(p)});
     h.node('startButton').handlers.click();
+    h.setClock(2500);h.context.updateTimer();
+    assert.equal(h.node('splitTimerDisplay').textContent,'1.50');
+    assert.equal(h.node('timerDisplay').innerHTML,'1.50');
     h.setClock(3500);h.contact('splitButton');
+    assert.equal(h.node('splitTimerDisplay').hidden,true);
+    assert.equal(h.node('splitContainer').hidden,false);
+    h.setClock(3700);h.context.updateTimer();
+    assert.equal(h.node('timerDisplay').innerHTML,'2.70');
     h.setClock(4000);h.node('splitButton').handlers.click({detail:1});
     assert.equal(h.context.getSplitData().length,1);
     assert.equal(h.context.getSplitData()[0].lapTime,'2.50');
@@ -55,6 +62,8 @@ test('missing or failing vibration does not block keyboard split and stop',()=>{
         h.node('startButton').handlers.click();
         assert.equal(h.context.getSplitData().length,0);
         assert.equal(h.node('latestSplit').textContent,'Ready for first split');
+        assert.equal(h.node('splitTimerDisplay').hidden,false);
+        assert.equal(h.node('splitContainer').hidden,true);
     });
 });
 
