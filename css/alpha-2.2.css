@@ -36,10 +36,10 @@
 #timingScreen .sessionHeader{margin:0;padding:0 12px 8px;text-align:center;flex-shrink:0}
 #timingScreen .swimmerName{font-size:18px}
 #timingScreen .eventName{font-size:14px}
-.raceControls{position:relative;flex:1;min-height:0;display:grid;grid-template-rows:1fr 1fr}
+.raceControls{position:relative;flex:1;min-height:0;display:grid;grid-template-rows:1fr 1fr;gap:8px;margin:0 8px 8px}
 #timingScreen .raceTarget{
   position:relative;width:100%;height:100%;min-height:0;margin:0;padding:0;
-  border:1px solid;border-radius:0;box-shadow:none;touch-action:none;
+  border:1px solid;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.10);touch-action:none;
   user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
   -webkit-tap-highlight-color:transparent;overflow:hidden;
 }
