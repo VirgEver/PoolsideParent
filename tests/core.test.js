@@ -234,7 +234,7 @@ test("settings offers provenance, online updates and a manual import fallback",(
     assert.match(source,/SOURCE ·/);
     assert.match(source,/standards\/catalog\.json/);
     const worker=fs.readFileSync(path.resolve(__dirname,"../service-worker.js"),"utf8");
-    assert.match(worker,/poolside-parent-pwa-v56/);
+    assert.match(worker,/poolside-parent-pwa-v57/);
     assert.match(worker,/\/standards\/catalog\.json[\s\S]*cache:"no-store"/);
 });
 

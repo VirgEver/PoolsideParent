@@ -31,8 +31,7 @@
   background:#edf2f7;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
   overflow:hidden;overscroll-behavior:none;
 }
-#timingScreen .screenTitle{margin:6px 12px!important;padding-left:0;font-size:18px;flex-shrink:0}
-#timingScreen .screenTitleLogo{width:36px;height:36px;flex:0 0 36px}
+#timingScreen .screenTitle{margin:6px 12px!important;padding-left:0;flex-shrink:0}
 #timingScreen .sessionHeader{margin:0;padding:0 12px 8px;text-align:center;flex-shrink:0}
 #timingScreen .swimmerName{font-size:18px}
 #timingScreen .eventName{font-size:14px}
