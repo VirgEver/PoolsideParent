@@ -55,7 +55,7 @@
   position:absolute;inset:12px 10px 12px 52px;display:flex;flex-direction:column;
   align-items:center;justify-content:center;pointer-events:none;text-align:center;color:#0b356a;
 }
-#timingScreen .raceTime{display:block;width:auto;border:0;border-radius:0;background:transparent;padding:0;font-size:clamp(32px,10vw,56px);font-weight:700;font-variant-numeric:tabular-nums;margin:0;line-height:1.15}
+#timingScreen .raceTime{display:block;width:auto;border:0;border-radius:0;background:transparent;padding:0;font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;margin:0;line-height:1.15}
 #timingScreen .raceTime[hidden],#timingScreen #splitContainer[hidden]{display:none}
 .raceTimeCaption{display:block;font-size:14px;font-weight:400;color:#64748b;margin-top:8px}
 #timingScreen #splitContainer{display:block;width:100%;min-height:0;margin:0;padding:0;background:transparent;border-radius:0;box-shadow:none;overflow:hidden;font-variant-numeric:tabular-nums;color:#0b356a}
@@ -555,3 +555,6 @@
   font-size:16px;
   line-height:1.2;
 }
+
+/* Larger main-screen target for starting a race. */
+#setupScreen #startButton{height:102px}
