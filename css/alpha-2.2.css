@@ -25,15 +25,41 @@
   #manualScreen .row{margin-bottom:10px}
 }
 
-/* Alpha 2.2 timing-button proportions */
-#timingScreen .buttonPanel button{
-  width:12ch;
-  height:102px;
-  min-height:102px;
+/* Gala timing: two full-width targets with a non-interactive readout. */
+#timingScreen:not(.hidden){
+  position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
+  background:#edf2f7;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  overflow:hidden;overscroll-behavior:none;
 }
-#timingScreen #splitButton{
-  margin-bottom:51px;
+#timingScreen .screenTitle{margin:6px 12px!important;padding-left:0;font-size:18px;flex-shrink:0}
+#timingScreen .screenTitleLogo{width:36px;height:36px;flex:0 0 36px}
+#timingScreen .sessionHeader{margin:0;padding:0 12px 8px;text-align:center;flex-shrink:0}
+#timingScreen .swimmerName{font-size:18px}
+#timingScreen .eventName{font-size:14px}
+.raceControls{position:relative;flex:1;min-height:0;display:grid;grid-template-rows:1fr 1fr}
+#timingScreen .raceTarget{
+  position:relative;width:100%;height:100%;min-height:0;margin:0;padding:0;
+  border:0;border-radius:0;box-shadow:none;touch-action:none;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  -webkit-tap-highlight-color:transparent;overflow:hidden;
 }
+#timingScreen .raceSplit{background:rgba(25,118,210,.17)}
+#timingScreen .raceStop{background:rgba(198,40,40,.15);border-top:2px solid #fff}
+.raceLabel{
+  position:absolute;inset:0 auto 0 0;width:42px;display:flex;align-items:center;justify-content:center;
+  writing-mode:vertical-rl;text-orientation:upright;letter-spacing:3px;font-size:18px;font-weight:700;color:#fff;
+}
+.raceSplit .raceLabel{background:#1976d2}
+.raceStop .raceLabel{background:#c62828}
+.raceReadout{
+  position:absolute;top:50%;left:42px;right:0;transform:translateY(-50%);
+  pointer-events:none;text-align:center;padding:14px 4px;color:#0b356a;
+  background:rgba(255,255,255,.88);
+}
+#timingScreen #timerDisplay{width:auto;border:0;border-radius:0;background:transparent;padding:0;font-size:clamp(32px,10vw,56px);font-variant-numeric:tabular-nums;margin:0;line-height:1.15}
+#latestSplit{font-size:15px;line-height:1.4;margin-top:6px;min-height:21px;color:#334155}
+#timingScreen .raceSplit.raceFeedback{background:rgba(25,118,210,.38)}
+#timingScreen .raceTarget:focus-visible{outline:3px solid #0b356a;outline-offset:-5px}
 
 /* Alpha 2.2 compact wrapping history filters */
 #filterHistoryButton{

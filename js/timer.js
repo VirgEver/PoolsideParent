@@ -185,6 +185,11 @@ function addSplit(totalElapsed){
 
     });
 
+    const latestSplit = document.getElementById("latestSplit");
+    if(latestSplit){
+        latestSplit.textContent = "Split " + splitNumber + " · " + lapString + " · Total " + totalString;
+    }
+
     renderSplits();
 
     return totalString;

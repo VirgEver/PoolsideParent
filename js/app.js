@@ -127,13 +127,42 @@ startButton.addEventListener("click",function(){
     loadSessionSettings();
     updateTimingHeader();
     showTimingScreen();
+    splitButton.classList.remove("raceFeedback");
+    document.getElementById("latestSplit").textContent="Ready for first split";
     startTimer();
 });
 
-splitButton.addEventListener("click",function(){recordSplit();});
-
-stopButton.addEventListener("click",function(){
+// Capture on contact so the parent's release timing does not delay the split/finish.
+// Pointer-generated click is ignored; keyboard and assistive clicks still work.
+function raceHaptic(pattern){
+    try{
+        if(typeof navigator.vibrate === "function"){navigator.vibrate(pattern);}
+    }catch(error){/* Feedback must never interrupt timing. */}
+}
+function bindRaceTarget(button,action){
+    button.addEventListener("pointerdown",function(event){
+        if(!event.isPrimary || event.button !== 0){return;}
+        event.preventDefault();
+        action();
+    });
+    button.addEventListener("click",function(event){
+        if(event.detail === 0){action();}
+    });
+    button.addEventListener("contextmenu",function(event){event.preventDefault();});
+}
+let splitFeedbackTimeout;
+bindRaceTarget(splitButton,function(){
+    if(!running){return;}
+    recordSplit();
+    raceHaptic(60);
+    splitButton.classList.add("raceFeedback");
+    clearTimeout(splitFeedbackTimeout);
+    splitFeedbackTimeout=setTimeout(function(){splitButton.classList.remove("raceFeedback");},180);
+});
+bindRaceTarget(stopButton,function(){
+    if(!running){return;}
     stopTimer();
+    raceHaptic([220,120,220]);
     showResultScreen();
 });
 
