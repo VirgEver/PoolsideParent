@@ -5,20 +5,27 @@
 const summaryCard = document.getElementById("summaryCard");
 
 function buildResultSummary(previousPB){
-    let pbHTML = "";
-    if(currentSession.showPB){
+    const enabled = currentSession.showPB;
+    const toggleHTML = "<div class='pbComparisonToggle' role='group' aria-label='PB comparison'>" +
+        "<button type='button' class='pbChoice" + (enabled ? " selected" : "") + "' data-pb-choice='yes' aria-pressed='" + enabled + "'>Y</button>" +
+        "<button type='button' class='pbChoice" + (!enabled ? " selected" : "") + "' data-pb-choice='no' aria-pressed='" + !enabled + "'>N</button></div>";
+    let pbHTML = "<div class='pbBox'><div class='pbTitle'>PB" + toggleHTML + "</div>";
+    if(enabled){
         if(previousPB){
             const difference = calculateDifference(finalTime, previousPB.finalTime);
-            pbHTML = "<div class='pbBox'><div class='pbTitle'>PB</div><div>" + escapeHTML(previousPB.finalTime) + "</div><div class='pbDifference'>Difference: " + escapeHTML(difference) + "</div></div>";
+            pbHTML += "<div>" + escapeHTML(previousPB.finalTime) + "</div><div class='pbDifference'>Difference: " + escapeHTML(difference) + "</div>";
         }else{
-            pbHTML = "<div class='pbBox'><div class='pbTitle'>PB</div><div>First recorded swim</div></div>";
+            pbHTML += "<div>First recorded swim</div>";
         }
     }
+    pbHTML += "</div>";
+    const newPB = enabled && Number.isFinite(timeToMilliseconds(finalTime)) &&
+        (!previousPB || timeToMilliseconds(finalTime) < timeToMilliseconds(previousPB.finalTime));
     let splitHTML = "";
     splitData.forEach(function(split){
         splitHTML += "<div class='summarySplitRow'><div>L" + split.lap + "</div><div>" + split.lapTime + "</div><div>" + split.totalTime + "</div></div>";
     });
-    summaryCard.innerHTML = "<div class='summaryTitle'>" + escapeHTML(currentSession.swimmer) + "</div><div class='summaryEvent'>" + escapeHTML(currentSession.distance) + " " + escapeHTML(currentSession.stroke) + "</div><div class='finalHeading'>Final Time</div><div class='finalTime'>" + escapeHTML(finalTime) + "</div><div class='summarySplits'><div class='summarySplitsTitle'>Splits</div>" + splitHTML + "</div>" + pbHTML + "<div class='summarySmall'>" + escapeHTML(sessionDate) + "&nbsp;&nbsp;&nbsp;" + escapeHTML(sessionTime) + "</div>";
+    summaryCard.innerHTML = "<div class='summaryTitle'>" + escapeHTML(currentSession.swimmer) + "</div><div class='summaryEvent'>" + escapeHTML(currentSession.distance) + " " + escapeHTML(currentSession.stroke) + "</div><div class='finalHeading'>Final Time</div><div class='finalTime" + (newPB ? " newPBTime" : "") + "'>" + escapeHTML(finalTime) + "</div><div class='summarySplits'><div class='summarySplitsTitle'>Splits</div>" + splitHTML + "</div>" + pbHTML + "<div class='summarySmall'>" + escapeHTML(sessionDate) + "&nbsp;&nbsp;&nbsp;" + escapeHTML(sessionTime) + "</div>";
 }
 
 function clearResultSummary(){ summaryCard.innerHTML = ""; }

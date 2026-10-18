@@ -27,25 +27,16 @@ const discardResultButton = document.getElementById("discardResultButton");
 const historyFileInput = document.getElementById("historyFileInput");
 
 const showPBInput = document.getElementById("showPB");
-const showPBYes = document.getElementById("showPBYes");
-const showPBNo = document.getElementById("showPBNo");
-
-function setPBComparison(enabled){
+// Delegate to the summary because its controls are rebuilt when result details change.
+summaryCard.addEventListener("click", function(event){
+    const choice = event.target.closest("[data-pb-choice]");
+    if(!choice){ return; }
+    const enabled = choice.dataset.pbChoice === "yes";
     showPBInput.checked = enabled;
-    showPBYes.classList.toggle("selected", enabled);
-    showPBNo.classList.toggle("selected", !enabled);
-    showPBYes.setAttribute("aria-pressed", enabled ? "true" : "false");
-    showPBNo.setAttribute("aria-pressed", enabled ? "false" : "true");
-}
-
-if(showPBInput && showPBYes && showPBNo){
-    function togglePBComparison(){
-        setPBComparison(!showPBInput.checked);
-    }
-    showPBYes.addEventListener("click", togglePBComparison);
-    showPBNo.addEventListener("click", togglePBComparison);
-    setPBComparison(showPBInput.checked);
-}
+    currentSession.showPB = enabled;
+    const pending = getPendingSwim();
+    if(pending){ buildResultSummary(pending.previousPB); }
+});
 
 const sessionSwimmer = document.getElementById("sessionSwimmer");
 const sessionEvent = document.getElementById("sessionEvent");
