@@ -522,3 +522,40 @@
   font-size:16px;
   line-height:1.2;
 }
+
+/* Compact result PB control and personal-best celebration. */
+#resultScreen .pbBox .pbTitle{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+#resultScreen .pbComparisonToggle{
+  display:inline-grid;
+  flex:0 0 62px;
+  width:62px;
+  height:26px;
+  border-radius:6px;
+}
+#resultScreen .pbComparisonToggle .pbChoice{
+  font-size:14px;
+  background:#d1d5db;
+  color:#444;
+}
+#resultScreen .pbComparisonToggle .pbChoice + .pbChoice{
+  border-left:1px solid #aaa;
+}
+#resultScreen .pbComparisonToggle .pbChoice.selected{
+  background:#1976d2;
+  color:#fff;
+}
+#resultScreen .finalTime.newPBTime{
+  width:fit-content;
+  max-width:100%;
+  box-sizing:border-box;
+  margin-left:auto;
+  margin-right:auto;
+  padding:5px 10px;
+  border-radius:8px;
+  background:#2e7d32;
+  color:#fff;
+}
