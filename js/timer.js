@@ -68,6 +68,9 @@ function updateTimer(){
 
     timerDisplay.innerHTML =
         formatTime(elapsed);
+    if(splitNumber === 0){
+        document.getElementById("splitTimerDisplay").textContent = formatTime(elapsed);
+    }
 
 }
 
@@ -96,6 +99,9 @@ function startTimer(){
 
     splitContainer.innerHTML =
         "";
+    splitContainer.hidden = true;
+    document.getElementById("splitTimerDisplay").hidden = false;
+    document.getElementById("splitTimerDisplay").textContent = "00:00.00";
 
     const now =
         new Date();
@@ -185,6 +191,11 @@ function addSplit(totalElapsed){
 
     });
 
+    const latestSplit = document.getElementById("latestSplit");
+    if(latestSplit){
+        latestSplit.textContent = "Split " + splitNumber + " · " + lapString + " · Total " + totalString;
+    }
+
     renderSplits();
 
     return totalString;
@@ -198,12 +209,13 @@ function addSplit(totalElapsed){
 
 function renderSplits(){
 
-    splitContainer.innerHTML =
-        "";
+    splitContainer.innerHTML = "";
+    splitContainer.hidden = false;
+    document.getElementById("splitTimerDisplay").hidden = true;
 
     let header =
         document.createElement(
-            "div"
+            "span"
         );
 
     header.className =
@@ -211,28 +223,28 @@ function renderSplits(){
 
     header.innerHTML =
 
-        "<div></div>"
+        "<span></span>"
 
         +
 
-        "<div>Split</div>"
+        "<span>Split</span>"
 
         +
 
-        "<div>Total</div>";
+        "<span>Total</span>";
 
     splitContainer.appendChild(
         header
     );
 
 
-    splitData.forEach(
+    splitData.slice(-5).reverse().forEach(
 
         function(split){
 
             let row =
                 document.createElement(
-                    "div"
+                    "span"
                 );
 
             row.className =
@@ -240,7 +252,7 @@ function renderSplits(){
 
             row.innerHTML =
 
-                "<div>L"
+                "<span>L"
 
                 +
 
@@ -248,11 +260,11 @@ function renderSplits(){
 
                 +
 
-                "</div>"
+                "</span>"
 
                 +
 
-                "<div>"
+                "<span>"
 
                 +
 
@@ -260,11 +272,11 @@ function renderSplits(){
 
                 +
 
-                "</div>"
+                "</span>"
 
                 +
 
-                "<div>"
+                "<span>"
 
                 +
 
@@ -272,7 +284,7 @@ function renderSplits(){
 
                 +
 
-                "</div>";
+                "</span>";
 
             splitContainer.appendChild(
                 row
@@ -394,6 +406,9 @@ function resetTimer(){
 
     splitContainer.innerHTML =
         "";
+    splitContainer.hidden = true;
+    document.getElementById("splitTimerDisplay").hidden = false;
+    document.getElementById("splitTimerDisplay").textContent = "00:00.00";
 
     splitData = [];
 
