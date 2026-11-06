@@ -79,9 +79,59 @@ function updateTimer(){
    Start Timer
 ===================================================== */
 
+/* Keep the display awake only while a visible swim timer is running.
+   Wake Lock is optional: a refusal must never interrupt timing. */
+let timerScreenWakeLock = null;
+let timerScreenWakeLockPending = false;
+
+async function requestTimerScreenWakeLock(){
+    if(!running || document.visibilityState !== "visible" ||
+       timerScreenWakeLock || timerScreenWakeLockPending ||
+       !("wakeLock" in navigator)){
+        return;
+    }
+    timerScreenWakeLockPending = true;
+    try{
+        const lock = await navigator.wakeLock.request("screen");
+        if(!running || document.visibilityState !== "visible"){
+            await lock.release();
+            return;
+        }
+        timerScreenWakeLock = lock;
+        lock.addEventListener("release", function(){
+            if(timerScreenWakeLock === lock){ timerScreenWakeLock = null; }
+        });
+    }catch(error){
+        // Unsupported settings, low battery or browser policy may refuse the lock.
+    }finally{
+        timerScreenWakeLockPending = false;
+    }
+}
+
+function releaseTimerScreenWakeLock(){
+    const lock = timerScreenWakeLock;
+    timerScreenWakeLock = null;
+    if(lock){
+        try{ Promise.resolve(lock.release()).catch(function(){}); }
+        catch(error){ /* Releasing the display must never interrupt timing. */ }
+    }
+}
+
+document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState === "visible"){
+        requestTimerScreenWakeLock();
+    }else{
+        releaseTimerScreenWakeLock();
+    }
+});
+window.addEventListener("pagehide", releaseTimerScreenWakeLock);
+window.addEventListener("pageshow", requestTimerScreenWakeLock);
+
 function startTimer(){
 
     running = true;
+
+    requestTimerScreenWakeLock();
 
     startTime =
         Date.now();
@@ -311,6 +361,8 @@ function stopTimer(){
 
     running = false;
 
+    releaseTimerScreenWakeLock();
+
     clearInterval(interval);
 
     let elapsed = elapsedSince(startTime,Date.now());
@@ -398,6 +450,8 @@ function createPendingSwim(previousPB){
 function resetTimer(){
 
     running = false;
+
+    releaseTimerScreenWakeLock();
 
     clearInterval(interval);
 
