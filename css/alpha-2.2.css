@@ -556,7 +556,7 @@
 }
 
 /* Larger main-screen target for starting a race. */
-#setupScreen #startButton{height:102px}
+#setupScreen #startButton{height:136px}
 
 /* Compact result PB control and personal-best celebration. */
 #resultScreen .pbBox .pbTitle{
@@ -611,3 +611,39 @@
   color:#fff;
 }
 
+/* Landscape phone timing: consistent Split left / Stop right with upright readouts. */
+@media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
+  #timingScreen:not(.hidden){
+    padding:env(safe-area-inset-top) env(safe-area-inset-right)
+            env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #timingScreen .screenTitle,
+  #timingScreen .sessionHeader{display:none}
+  #timingScreen .raceControls{
+    margin:8px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-rows:minmax(0,1fr);
+    direction:ltr;
+  }
+  #timingScreen .raceSplit{grid-column:1;grid-row:1}
+  #timingScreen .raceStop{grid-column:2;grid-row:1}
+  #timingScreen .raceLabel{
+    inset:0 0 auto;
+    width:auto;
+    height:34px;
+    writing-mode:horizontal-tb;
+    text-orientation:mixed;
+    letter-spacing:1.5px;
+    font-size:16px;
+  }
+  #timingScreen .raceReadout{
+    inset:44px 10px 8px;
+  }
+  #timingScreen .splitHeader,
+  #timingScreen .splitRow{
+    padding:3px 0;
+    line-height:1.15;
+  }
+  #timingScreen .splitRow{font-size:14px}
+  #timingScreen .splitRow:nth-child(n+4){display:grid}
+}
