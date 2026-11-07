@@ -6,6 +6,7 @@ const path=require('node:path');
 
 function raceHarness(vibration){
     let clock=1000;
+    const documentEvents={},windowEvents={};
     const nodes=new Map();
     const node=id=>{
         if(!nodes.has(id)){
@@ -17,14 +18,16 @@ function raceHarness(vibration){
         }
         return nodes.get(id);
     };
-    const context={console,navigator:vibration,Date:class extends Date {static now(){return clock;}},
-        document:{getElementById:node,createElement:()=>({})},
+    const context={console,navigator:vibration,summaryCard:node('summaryCard'),Date:class extends Date {static now(){return clock;}},
+        document:{visibilityState:'visible',getElementById:node,createElement:()=>({}),
+            addEventListener:(type,handler)=>{documentEvents[type]=handler;}},
+        window:{addEventListener:(type,handler)=>{windowEvents[type]=handler;}},
         setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){},
         leaveResultScreen(){},getPersonalBest:()=>null,finishSwim(){},
         formatElapsedMilliseconds:ms=>(ms/1000).toFixed(2),elapsedSince:(start,now)=>now-start};
     vm.createContext(context);
     ['js/timer.js','js/app.js'].forEach(file=>vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),context));
-    return {context,node,setClock:value=>clock=value,
+    return {context,node,documentEvents,windowEvents,setClock:value=>clock=value,
         contact:id=>node(id).handlers.pointerdown({isPrimary:true,button:0,preventDefault(){}})};
 }
 
@@ -73,4 +76,23 @@ test('secondary touches and right clicks do not record a split',()=>{
     h.node('splitButton').handlers.pointerdown({isPrimary:false,button:0});
     h.node('splitButton').handlers.pointerdown({isPrimary:true,button:2});
     assert.equal(h.context.getSplitData().length,0);
+});
+
+test('screen stays awake during timing, reacquires on return and releases on stop',async()=>{
+    const locks=[];
+    const h=raceHarness({wakeLock:{async request(type){
+        assert.equal(type,'screen');
+        const lock={released:false,addEventListener(){},async release(){this.released=true;}};
+        locks.push(lock);return lock;
+    }}});
+    const flush=()=>new Promise(setImmediate);
+    h.node('startButton').handlers.click();await flush();
+    assert.equal(locks.length,1);
+    h.contact('splitButton');assert.equal(locks[0].released,false);
+    h.context.document.visibilityState='hidden';h.documentEvents.visibilitychange();await flush();
+    assert.equal(locks[0].released,true);
+    h.context.document.visibilityState='visible';h.documentEvents.visibilitychange();await flush();
+    assert.equal(locks.length,2);
+    h.contact('stopButton');await flush();assert.equal(locks[1].released,true);
+    h.documentEvents.visibilitychange();await flush();assert.equal(locks.length,2);
 });
