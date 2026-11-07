@@ -611,3 +611,33 @@
   color:#fff;
 }
 
+
+/* Phone timing portrait experiment: logical portrait dimensions inside landscape. */
+#timingScreen.timingPortraitRotated:not(.hidden){
+  inset:auto;
+  left:var(--timing-center-x);
+  top:var(--timing-center-y);
+  width:var(--timing-width);
+  height:var(--timing-height);
+  transform:translate(-50%, -50%) rotate(var(--timing-rotation));
+  transform-origin:center;
+  transition:none;
+  padding:var(--timing-safe-top) var(--timing-safe-right)
+          var(--timing-safe-bottom) var(--timing-safe-left);
+}
+#timingScreen.timingPortraitRotated.timingPortraitCompact .screenTitle{
+  gap:8px;
+  font-size:1.9rem;
+}
+#timingScreen.timingPortraitRotated.timingPortraitCompact .screenTitleLogo{
+  width:54px;
+  height:54px;
+  flex-basis:54px;
+}
+/* Viewport media queries see landscape; use the rotated panel's logical height. */
+#timingScreen.timingPortraitRotated .splitHeader,
+#timingScreen.timingPortraitRotated .splitRow{padding:7px 0}
+#timingScreen.timingPortraitRotated .splitRow:nth-child(n+4){display:grid}
+#timingScreen.timingPortraitRotated.timingPortraitShort .splitHeader,
+#timingScreen.timingPortraitRotated.timingPortraitShort .splitRow{padding:3px 0}
+#timingScreen.timingPortraitRotated.timingPortraitShort .splitRow:nth-child(n+4){display:none}
