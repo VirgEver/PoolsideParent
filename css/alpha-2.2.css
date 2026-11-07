@@ -617,7 +617,10 @@
     padding:env(safe-area-inset-top) env(safe-area-inset-right)
             env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
+  #timingScreen .screenTitle,
+  #timingScreen .sessionHeader{display:none}
   #timingScreen .raceControls{
+    margin:8px;
     grid-template-columns:repeat(2,minmax(0,1fr));
     grid-template-rows:minmax(0,1fr);
     direction:ltr;
