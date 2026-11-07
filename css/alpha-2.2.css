@@ -611,33 +611,36 @@
   color:#fff;
 }
 
-
-/* Phone timing portrait experiment: logical portrait dimensions inside landscape. */
-#timingScreen.timingPortraitRotated:not(.hidden){
-  inset:auto;
-  left:var(--timing-center-x);
-  top:var(--timing-center-y);
-  width:var(--timing-width);
-  height:var(--timing-height);
-  transform:translate(-50%, -50%) rotate(var(--timing-rotation));
-  transform-origin:center;
-  transition:none;
-  padding:var(--timing-safe-top) var(--timing-safe-right)
-          var(--timing-safe-bottom) var(--timing-safe-left);
+/* Landscape phone timing: consistent Split left / Stop right with upright readouts. */
+@media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
+  #timingScreen:not(.hidden){
+    padding:env(safe-area-inset-top) env(safe-area-inset-right)
+            env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #timingScreen .raceControls{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-rows:minmax(0,1fr);
+    direction:ltr;
+  }
+  #timingScreen .raceSplit{grid-column:1;grid-row:1}
+  #timingScreen .raceStop{grid-column:2;grid-row:1}
+  #timingScreen .raceLabel{
+    inset:0 0 auto;
+    width:auto;
+    height:34px;
+    writing-mode:horizontal-tb;
+    text-orientation:mixed;
+    letter-spacing:1.5px;
+    font-size:16px;
+  }
+  #timingScreen .raceReadout{
+    inset:44px 10px 8px;
+  }
+  #timingScreen .splitHeader,
+  #timingScreen .splitRow{
+    padding:3px 0;
+    line-height:1.15;
+  }
+  #timingScreen .splitRow{font-size:14px}
+  #timingScreen .splitRow:nth-child(n+4){display:grid}
 }
-#timingScreen.timingPortraitRotated.timingPortraitCompact .screenTitle{
-  gap:8px;
-  font-size:1.9rem;
-}
-#timingScreen.timingPortraitRotated.timingPortraitCompact .screenTitleLogo{
-  width:54px;
-  height:54px;
-  flex-basis:54px;
-}
-/* Viewport media queries see landscape; use the rotated panel's logical height. */
-#timingScreen.timingPortraitRotated .splitHeader,
-#timingScreen.timingPortraitRotated .splitRow{padding:7px 0}
-#timingScreen.timingPortraitRotated .splitRow:nth-child(n+4){display:grid}
-#timingScreen.timingPortraitRotated.timingPortraitShort .splitHeader,
-#timingScreen.timingPortraitRotated.timingPortraitShort .splitRow{padding:3px 0}
-#timingScreen.timingPortraitRotated.timingPortraitShort .splitRow:nth-child(n+4){display:none}
