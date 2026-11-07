@@ -556,7 +556,7 @@
 }
 
 /* Larger main-screen target for starting a race. */
-#setupScreen #startButton{height:102px}
+#setupScreen #startButton{height:136px}
 
 /* Compact result PB control and personal-best celebration. */
 #resultScreen .pbBox .pbTitle{
